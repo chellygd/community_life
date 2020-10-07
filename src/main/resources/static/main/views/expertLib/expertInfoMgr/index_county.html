@@ -1,0 +1,394 @@
+<script type="text/javascript" src="./plug-in/jquery/jquery-1.9.1.min.js"></script> 
+<script type="text/javascript" src="./btn_authority.js"></script>
+<title>县级专家信息管理</title>
+  
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a><cite>专家库管理</cite></a>
+    <a><cite>专家信息管理</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">   
+  <div class="layui-card">
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-admin" ekper="232" data-type="addExpert">添加</button>
+        <button class="layui-btn layuiadmin-btn-admin" data-type="updateExpert">修改</button>
+        <button class="layui-btn layuiadmin-btn-admin" data-type="delExpert">删除</button>
+        <button class="layui-btn layuiadmin-btn-admin" data-type="detailExpert">详情</button>
+        <button class="layui-btn layuiadmin-btn-admin" data-type="recommendExpert">提交</button>
+        <button class="layui-btn layuiadmin-btn-admin" data-type="createUser">创建专家用户</button>
+        <button class="layui-btn layuiadmin-btn-admin" data-type="resetPwd">重置专家密码</button>
+      </div>
+      <table id="expertInfoMgr-table" lay-filter="expertInfoMgr-table"></table>  
+    </div>
+  </div>
+</div>
+<script type="text/html" id="recommendStatus">
+    {{#  if(d.county_subflag==1){ }}
+		<span style="color:red">已提交</span>
+	{{#  } else { }}
+		未提交
+	{{#  } }}
+</script>
+<script type="text/html" id="finalCheckStatus">
+    {{#  if(d.final_checkStatus==0){ }}
+		待审核
+	{{#  } else if(d.final_checkStatus==1){ }}
+		审核中
+	{{#  } else if(d.final_checkStatus==2){ }}
+		审核未通过
+	{{#  } else if(d.final_checkStatus==3){ }}
+		待考核
+	{{#  } else if(d.final_checkStatus==4){ }}
+		考核通过
+	{{#  } else if(d.final_checkStatus==5){ }}
+		考核未通过
+	{{#  } }}
+</script>
+<script type="text/html" id="isUser">
+    {{#  if(d.open_id != "" && d.open_id != null){ }}
+		<span style="color:red">是</span>
+	{{#  } else { }}
+		否
+	{{#  } }}
+</script>
+<script>
+layui.use(['admin', 'useradmin', 'table'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,view = layui.view
+  ,table = layui.table
+  ,form = layui.form;
+  
+  //form.render(null, '');
+  
+
+	/* form.on('submit(LAY-user-front-search)', function(data){
+		var field = data.field;
+		
+		//执行重载
+		table.reload('LAY-user-manage', {
+		  where: field
+		});
+	}); */
+  
+	table.render({
+		 elem: '#expertInfoMgr-table'
+		,url:'wkrj/expertInfoMgr/listExpert'
+		,cols: [[
+	         {type:'checkbox'}
+			,{field:'name', title: '专家姓名'}
+			,{field:'phone', title: '手机号'}
+			,{field:'county_subflag', title: '提交状态',templet: '#recommendStatus'}
+			,{field:'final_checkStatus', title: '审核状态',templet: '#finalCheckStatus'}
+			,{field:'open_id', title: '是否已创建用户',templet: '#isUser'}
+			,{field:'user_name', title: '用户名'}
+		]]
+		,page: true
+		,done: function(res, curr, count){
+	  		var response = layui.setter.response;
+	  		//登录状态失效，清除本地 access_token，并强制跳转到登入页
+	  		if(res[response.statusName] == response.statusCode.logout){
+	  			view.exit();
+	  		}
+	  	}
+	  	,where: { //通过 request 头传递
+	  		access_token: layui.data('layuiAdmin').access_token
+	  	}
+	});
+
+  //事件
+  var active = {
+		  addExpert: function(){
+		      admin.popup({
+		        title: '添加专家'
+		        ,area: ['400px', '300px']
+		        ,id: 'county_expert_add'
+		        ,success: function(layero, index){
+		          	view(this.id).render('expertLib/expertInfoMgr/expertInfoMgr_add').done(function(){
+		        
+		            form.render(null, 'layuiadmin-form-addExpert');
+		            
+		            //监听提交
+		            form.on('submit(LAY-addExpert-submit)', function(data){
+		              var field = data.field; //获取提交的字段
+		              //提交 Ajax 成功后，关闭当前弹层并重载表格
+		              admin.req({
+		                  url: 'wkrj/expertInfoMgr/addExpert'
+		                  ,type: 'post'
+		                  ,data: field
+		                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+								if(res.success){
+									layer.msg(res.msg);
+									layer.close(index); //执行关闭 
+						            layui.table.reload('expertInfoMgr-table'); //重载表格
+								}else{
+									layer.msg(res.msg);
+								}
+				              
+			               }
+		              });
+		            });
+		          });
+		        }
+		      });
+		    }
+  	,updateExpert: function(){
+      var checkStatus = table.checkStatus('expertInfoMgr-table')
+      data = checkStatus.data; //得到选中的数据
+      if(data.length != 1){
+        return layer.msg('请选择一条数据');
+      }
+      var deptId = data[0].exp_deptid;
+      if(deptId.length == "4"){
+    	  var submitFlag = data[0].city_subflag;
+    	  if(submitFlag == "1" || submitFlag == 1){
+    		  return layer.msg('专家信息已提交，不允许修改');
+    	  }
+      }
+      if(deptId.length == "6"){
+    	  var submitFlag = data[0].county_subflag;
+    	  if(submitFlag == "1" || submitFlag == 1){
+    		  return layer.msg('专家信息已提交，不允许修改');
+    	  }
+      }
+      admin.popup({
+        title: '修改专家'
+        ,area: ['400px', '300px']
+        ,id: 'county_expert_edit'
+        ,success: function(layero, index){
+          	view(this.id).render('expertLib/expertInfoMgr/expertInfoMgr_update',data[0]).done(function(){
+        
+            form.render(null, 'layuiadmin-form-updateExpert');
+            
+            //监听提交
+            form.on('submit(LAY-updateExpert-submit)', function(data){
+              var field = data.field; //获取提交的字段
+              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              admin.req({
+                  url: 'wkrj/expertInfoMgr/updateExpert_admin'
+                  ,type: 'post'
+                  ,data: field
+                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+						if(res.success){
+							layer.msg(res.msg);
+							layer.close(index); //执行关闭 
+				            layui.table.reload('expertInfoMgr-table'); //重载表格
+						}else{
+							layer.msg(res.msg);
+						}
+	               }
+              });
+            });
+          });
+        }
+      });
+    }
+  	,delExpert: function(){
+        var checkStatus = table.checkStatus('expertInfoMgr-table')
+        ,checkData = checkStatus.data; //得到选中的数据
+
+        if(checkData.length != 1){
+          return layer.msg('请选择一条数据');
+        }
+        /* var ids = new Array(); 	
+  		for(var i=0;i<checkData.length;i++){
+			ids.push(checkData[i].explib_id);
+		} */
+		var explib_id = checkData[0].explib_id;
+		var user_id = checkData[0].user_id;
+		var deptId = checkData[0].exp_deptid;
+		var open_id = checkData[0].openid;
+        if(deptId.length == "4"){
+    	  var submitFlag = checkData[0].city_subflag;
+    	  if(submitFlag == "1" || submitFlag == 1){
+    		  return layer.msg('专家信息已提交，不允许删除');
+    	  }
+        }
+        if(deptId.length == "6"){
+    	  var submitFlag = checkData[0].county_subflag;
+    	  if(submitFlag == "1" || submitFlag == 1){
+    		  return layer.msg('专家信息已提交，不允许删除');
+    	  }
+        }
+  	    layer.confirm('确定删除吗？删除后数据不能恢复', function(index) {
+  	    	admin.req({
+                url: 'wkrj/expertInfoMgr/delExpert'
+                ,type: 'post'
+                ,data: {explib_id:explib_id,user_id:user_id,open_id:open_id}
+                ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+              	  try {
+              		  res=eval('('+res+')');
+          			} catch (e) {}
+          			if(res.code=="0" || res.code==0){
+          				if(res.success){
+          					table.reload('expertInfoMgr-table');
+              	            layer.msg(res.msg);
+          				}else{
+              				layer.msg(res.msg);
+              			}
+          			}
+                }
+            });
+            
+         });
+      }
+  	,detailExpert: function(){
+	      var checkStatus = table.checkStatus('expertInfoMgr-table')
+	      data = checkStatus.data; //得到选中的数据
+	      if(data.length != 1){
+	        return layer.msg('请选择一条数据');
+	      }
+	      admin.popup({
+	        title: '专家详情'
+	        ,area: ['500px', '600px']
+	        ,id: 'county_expert_detail'
+	        ,success: function(layero, index){
+	          	view(this.id).render('expertLib/expertInfoMgr/expertInfoMgr_detail',data[0]).done(function(){
+	            form.render(null, 'layuiadmin-form-detailExpert');
+	            
+	          });
+	        }
+	      });
+	    }
+  		,recommendExpert: function(){
+  			layer.confirm('确定提交吗？提交后将不允许进行修改、删除以及再次提交', function(index) {
+  	  	    	admin.req({
+  	                url: 'wkrj/expertInfoMgr/recommendExpert'
+  	                ,type: 'post'
+  	                ,data: {deptLevel:"county"}
+  	                ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+  	              	  try {
+  	              		  res=eval('('+res+')');
+  	          			} catch (e) {}
+  	          			if(res.code=="0" || res.code==0){
+  	          				if(res.success){
+  	          					table.reload('expertInfoMgr-table');
+  	              	            layer.msg(res.msg);
+  	          				}else{
+  	              				layer.msg(res.msg);
+  	              			}
+  	          			}
+  	                }
+  	            });  
+  	   	   });
+	   }
+  	   ,createUser: function(){
+		    var checkStatus = table.checkStatus('expertInfoMgr-table')
+		    checkData = checkStatus.data; //得到选中的数据
+		    if(checkData.length <= 0){
+		        return layer.msg('请选择数据');
+		    }
+		    var ids = ""; 	
+		  	for(var i=0;i<checkData.length;i++){
+		  		var user_id = checkData[i].user_id;
+		  		if(null == user_id || "" == user_id || undefined == user_id || "undefined" == user_id){
+		  			ids += checkData[i].name+"#"+checkData[i].phone+"#"+checkData[i].explib_id+",";
+		  		}
+			}
+		  	if(ids != "" && ids != null){
+		  		ids = ids.substring(0,ids.length-1);
+		  	}else{
+		  		return layer.msg('请选择未创建用户的专家进行用户创建');
+		  	}
+		  	layer.confirm('确定为选中的专家创建用户吗？', function(index) {
+		  		admin.req({
+		               url: 'wkrj/expertInfoMgr/createExpertUser'
+		               ,type: 'post'
+		               ,data: {ids:ids}
+		               ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+		             	  try {
+		             		  res=eval('('+res+')');
+		         			} catch (e) {}
+		         			if(res.code=="0" || res.code==0){
+		         				if(res.success){
+		         					table.reload('expertInfoMgr-table');
+		             	            layer.msg(res.msg);
+		         				}else{
+		             				layer.msg(res.msg);
+		             			}
+		         			}
+		               }
+		           });
+		  	});
+		  	
+	   }
+  	   ,resetPwd: function(){
+		    var checkStatus = table.checkStatus('expertInfoMgr-table')
+		    checkData = checkStatus.data; //得到选中的数据
+		    if(checkData.length <= 0){
+		        return layer.msg('请选择数据');
+		    }
+		    var openids = ""; 	
+		  	for(var i=0;i<checkData.length;i++){
+		  		openids += checkData[i].open_id+",";
+			}
+		  	if(openids != "" && openids != null){
+		  		openids = openids.substring(0,openids.length-1);
+		  	}
+		  	layer.confirm('确定为选中的专家重置用户密码吗？', function(index) {
+		  		admin.req({
+		            url: 'wkrj/expertInfoMgr/resetExpertUserPwd'
+		            ,type: 'post'
+		            ,data: {openids:openids}
+		            ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+		          	  try {
+		          		  res=eval('('+res+')');
+		      			} catch (e) {}
+		      			if(res.code=="0" || res.code==0){
+		      				if(res.success){
+		      					table.reload('expertInfoMgr-table');
+		          	            layer.msg(res.msg);
+		      				}else{
+		          				layer.msg(res.msg);
+		          			}
+		      			}
+		            }
+		        });
+		  	});
+	   }
+	  /* 
+	    
+	    
+	  ,resetPwd: function(){
+	      admin.popup({
+	        title: '添加市级信息'
+	        ,area: ['500px', '450px']
+	        ,id: 'LAY-popup-city-add'
+	        ,success: function(layero, index){
+	          view(this.id).render('portal/city/saveCity').done(function(){
+	        
+	            form.render(null, 'layuiadmin-form-saveCity');
+	            
+	            //监听提交
+	            form.on('submit(LAY-City-submit)', function(data){
+	              var field = data.field; //获取提交的字段
+	              //提交 Ajax 成功后，关闭当前弹层并重载表格
+	              admin.req({
+	                  url: 'wkrj/cityManage/saveCity'
+	                  ,type: 'get'
+	                  ,data: field
+	                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+							if(res.success){
+								layer.msg("添加成功");
+							}else{
+								layer.msg(res.msg);
+							}
+							layer.close(index); //执行关闭 
+							layui.table.reload('city-cityManage-table'); //重载表格
+	                  }
+	              });
+	            });
+	          });
+	        }
+	      });
+	   } */
+	}  
+  $('.layui-btn.layuiadmin-btn-admin').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+});
+</script>

@@ -1,0 +1,85 @@
+  <style>
+  	.layui-form-item .layui-input-inline {
+	    width: 330px;
+	}
+  </style>
+  <!-- 下拉树插件 -->
+  <script src="./main/views/component/select_tree/formSelects-v4.js"></script>
+  <link rel="stylesheet" href="./main/views/component/select_tree/formSelects-v4.css">
+  <form class="layui-form" lay-filter="layuiadmin-dept-add-list" id="layuiadmin-dept-add-list">
+  <div style="padding: 20px 30px 0 0;">
+    <div class="layui-form-item">
+      <label class="layui-form-label">部门名称</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="text" name="deptName" value="{{ d.params.dept_name || '' }}" lay-verify="required" placeholder="请输入部门名称" autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">上级部门</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template lay-done="layui.data.sendParams(d.params)">
+			<select name="deptParentId" xm-select="example6_7" xm-select-radio>
+    		</select>
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">显示顺序</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="number" name="deptOrder" value="{{ d.params.dept_order || 0 }}"  min="0" lay-verify="required|number|number_new" value="0" autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">备注信息</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="text" name="deptOther" value="{{ d.params.dept_other || '' }}"  placeholder="请输入备注信息" autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <script type="text/html" template>
+      <input type="hidden" name="deptId" value="{{ d.params.dept_id || '' }}">
+    </script>
+    <div class="layui-form-item">
+      <label class="layui-form-label"></label>
+      <div class="layui-input-inline">
+        <input type="button" lay-submit lay-filter="layuiadmin-dept-add-submit" value="提交" class="layui-btn">
+        <input type="button" onclick="close_data()" value="取消" class="layui-btn">
+      </div>
+    </div>
+  </div>
+  </form>
+  <script>
+$(function(){
+	layui.use(['upload','layer'],function () {
+	    var upload = layui.upload,layer = layui.layer;
+	    var form=layui.form;
+	       //自定义验证
+		form.verify({
+		    number_new: function(value, item){ //value：表单的值、item：表单的DOM对象
+		      if(value<0){
+		        return '不能小于0';
+		      }
+		    }
+		});	
+	});	
+})
+layui.data.sendParams = function(params){
+	var dept_parent_id=params.dept_parent_id;
+		layui.formSelects.data('example6_7', 'server', {
+            url: 'wkrjsystemnew/wkrjDept/getDeptTree?access_token='+layui.data('layuiAdmin').access_token,//模块树
+            success:function(){
+            	if(isObjNotEmpty(dept_parent_id)){
+            		layui.formSelects.value('example6_7', [dept_parent_id], true);
+            	}
+            }
+        }); 
+}
+function close_data(){
+  parent.layer.closeAll();
+}
+	</script>

@@ -1,0 +1,61 @@
+    <style>
+  	.layui-form-item .layui-input-inline {
+	    width: 330px;
+	}
+  </style>
+  <script src="./main/views/component/select_tree/formSelects-v4.js"></script>
+  <link rel="stylesheet" href="./main/views/component/select_tree/formSelects-v4.css">
+  <div class="layui-form" lay-filter="layuiadmin-role-update-list" id="layuiadmin-role-update-list"style="padding: 20px 30px 0 0;">
+    <div class="layui-form-item">
+      <label class="layui-form-label">角色名称</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="text" name="roleName" value="{{ d.params.roleName || '' }}" lay-verify="required" placeholder="请输入角色名称" autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">角色部门</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template lay-done="layui.data.sendParams(d.params)">
+			<select name="roleDept" lay-verify="required" xm-select="example6_6" xm-select-radio>
+    		</select>
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">角色备注</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="text" name="roleOther" value="{{ d.params.roleOther || '' }}"  autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <script type="text/html" template>
+          <input type="hidden" name="roleId" value="{{ d.params.roleId || '' }}" >
+        </script>
+    <div class="layui-form-item">
+      <label class="layui-form-label"></label>
+      <div class="layui-input-inline">
+        <input type="button" lay-submit lay-filter="layuiadmin-role-update-submit" value="确认" class="layui-btn">
+        <input type="button" onclick="close_data()" value="取消" class="layui-btn">
+      </div>
+    </div>
+  </div>
+  <script>
+  	function close_data(){
+	  parent.layer.closeAll();
+	}
+	layui.data.sendParams = function(params){
+		layui.formSelects.data('example6_6', 'server', {
+            url: 'wkrjsystemnew/wkrjDept/getDeptTree?access_token='+layui.data('layuiAdmin').access_token,//模块树
+            success:function(){
+            	if(isObjNotEmpty(params.roleDept)){
+            		layui.formSelects.value('example6_6', [params.roleDept], true);
+            	} 
+            }
+        });
+	};
+	
+  </script>
+  

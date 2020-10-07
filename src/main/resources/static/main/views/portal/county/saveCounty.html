@@ -1,0 +1,107 @@
+<div class="layui-form" lay-filter="layuiadmin-form-saveCounty" style="padding: 20px 0 0 0;">
+	<input type="text" name="dept_name" class="layui-input" style="display: none;">
+	<div class="layui-form-item">
+		<label class="layui-form-label">所属市</label>
+		<div class="layui-input-inline">
+			<select lay-filter="dept" id="deptInfo" name="dept_parent_id" lay-verify="required">
+							
+			</select>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">名称</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" name="repeat_name" value="{{ d.params.dept_name || '' }}" lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">显示顺序</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="number" name="dept_order" value="{{ d.params.dept_order || '' }}" lay-verify="required" placeholder="显示顺序" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">部门类型</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" name="dept_type" value="{{ d.params.dept_type || '' }}" placeholder="部门类型" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">备注信息</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" name="dept_other" value="{{ d.params.dept_other || '' }}" placeholder="备注信息" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label"></label>
+		<div class="layui-input-inline">
+			<input type="button" lay-submit lay-filter="LAY-County-submit" value="确认" class="layui-btn">
+			<input type="button" value="取消" class="layui-btn" onclick="close_data()">
+		</div>
+	</div>
+</div>
+<script>
+layui.use(['admin', 'form', 'upload'], function(){
+  var $ = layui.$
+  ,form = layui.form
+  ,admin = layui.admin
+  ,upload = layui.upload;
+	$(function(){
+		getParentDept();
+	});
+  
+    function getParentDept(){
+		var html = "<option value='' selected=''>请选择</option>";
+		admin.req({
+            url: 'wkrj/countyManage/listCity'
+            ,type: 'get'
+            ,dataType: 'json'
+            ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+            	if(isObjNotEmpty(res.data)){
+    				$.each(res.data,function(j,v){
+    					html += "<option value='"+v.id+"'>"+v.name+"</option>";
+    				});
+    			}
+    			$("#deptInfo").html(html);
+    			form.render(null, 'layuiadmin-form-saveCounty');
+            }
+        });
+		/* $.post("wkrj/countyManage/listCity",{},function(data){
+			try {
+				data=eval('('+data+')');
+			} catch (e) {}
+			if(isObjNotEmpty(data)){
+				$.each(data,function(j,v){
+					html += "<option value='"+v.id+"'>"+v.name+"</option>";
+				});
+			}
+			$("#deptInfo").html(html);
+			form.render();
+		}); */
+	}
+  	//判断变量（字符串）是否为空或null
+    function isObjEmpty(obj){
+    	if(obj==null||obj==undefined||obj==""||obj=="null"||obj=="undefinet"){
+    		return true;
+    	}else{
+    		return false;
+    	}
+    }
+    function isObjNotEmpty(obj){
+    	return !isObjEmpty(obj);
+    }
+})
+function close_data(){
+  parent.layer.closeAll();
+}
+</script>
+

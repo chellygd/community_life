@@ -1,0 +1,156 @@
+
+<title>设置我的资料</title>
+ <!-- 下拉树插件 -->
+<script src="./main/views/component/select_tree/formSelects-v4.js"></script>
+<link rel="stylesheet" href="./main/views/component/select_tree/formSelects-v4.css">
+<div class="layui-fluid">
+  <div class="layui-row layui-col-space15">
+    <div class="layui-col-md12">
+      <div class="layui-card">
+        <div class="layui-card-header">设置我的资料</div>
+        <div class="layui-card-body" pad15>
+          
+          <div class="layui-form" lay-filter="">
+            <div class="layui-form-item">
+              <label class="layui-form-label">账号</label>
+              <div class="layui-input-inline">
+                <input type="text" name="user_name" value="" readonly class="layui-input">
+              </div>
+              <div class="layui-form-mid layui-word-aux">不可修改。一般用于后台登入名</div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">真实姓名</label>
+              <div class="layui-input-inline">
+                <input type="text" name="user_realname" value="" lay-verify="required" autocomplete="off" placeholder="请输入真实姓名" class="layui-input">
+              </div>
+            </div>
+            <!-- <div class="layui-form-item">
+              <label class="layui-form-label">性别</label>
+              <div class="layui-input-block">
+                <input type="radio" name="sex" value="男" title="男">
+                <input type="radio" name="sex" value="女" title="女" checked>
+              </div>
+            </div> -->
+            <div class="layui-form-item">
+              <label class="layui-form-label">头像</label>
+              <!-- <div class="layui-input-inline">
+                <input name="avatar" lay-verify="required" id="LAY_avatarSrc" placeholder="图片地址" value="http://cdn.layui.com/avatar/168.jpg" class="layui-input">
+              </div> -->
+              <div class="layui-input-inline layui-btn-container" style="width: auto;    display: flex;">
+                <button type="button" class="layui-btn layui-btn-primary" id="LAY_user_url">
+                  <i class="layui-icon">&#xe67c;</i>上传图片
+                </button>
+                <button type="button" class="layui-btn layui-btn-primary" onclick="delUser_url()">
+                 		 删除图片
+                </button>
+                <div id="user_url_icon_div" style="margin-left:50px;">
+                
+                <!-- <button class="layui-btn layui-btn-primary" layadmin-event="avartatPreview">查看图片</button > -->
+              </div>
+              <input type="hidden" id="user_url" name="user_url">
+                <input type="hidden" id="user_id" name="user_id">
+           </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">手机</label>
+              <div class="layui-input-inline">
+                <input type="text" name="user_tel" value="" lay-verify="required|phone" autocomplete="off" class="layui-input">
+              </div>
+            </div>
+            <div class="layui-form-item">
+              <label class="layui-form-label">身份证</label>
+              <div class="layui-input-inline">
+                <input type="text" name="user_card" value="" lay-verify="required|identity" autocomplete="off" class="layui-input">
+              </div>
+            </div>
+            <!-- <div class="layui-form-item">
+              <label class="layui-form-label">邮箱</label>
+              <div class="layui-input-inline">
+                <input type="text" name="email" value="" lay-verify="email" autocomplete="off" class="layui-input">
+              </div>
+            </div> -->
+            <!-- <div class="layui-form-item layui-form-text">
+              <label class="layui-form-label">备注</label>
+              <div class="layui-input-block">
+                <textarea name="remarks" placeholder="请输入内容" class="layui-textarea"></textarea>
+              </div>
+            </div> -->
+            <div class="layui-form-item">
+              <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="user_submit">确认修改</button>
+                <!-- <button type="reset" class="layui-btn layui-btn-primary">重新填写</button> -->
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+//layui.use('set', layui.factory('set'));
+layui.use(['admin','element','layer', 'form', 'upload'], function () {
+    var admin = layui.admin;
+    var view = layui.view;
+    var form = layui.form;
+    var upload = layui.upload;
+    admin.req({
+    	url:'wkrjsystemnew/wkrjUser/getUserInfo',
+    	success:function(data){
+    		if(data.success){
+    			loadFormData(data.data);
+    			if(isObjNotEmpty(data.data.user_url)){
+    				$("#user_url_icon_div").html("<img height='40px' width='40px' src='"+data.data.user_url+"'>");
+    			}
+    		}else{
+    			layer.msg(data.msg);
+    		}
+    	},
+    	error:function(){
+    	
+    	}
+    });
+	 //普通图片上传
+    var uploadInst = upload.render({
+        elem: '#LAY_user_url',//绑定的元素
+        url: 'wkrjsystemnew/upload/uploadModule?access_token='+layui.data('layuiAdmin').access_token,
+        //data: {access_token: layui.data('layuiAdmin').access_token},
+        auto:true,//是否自动上传
+        accept:"images",//指定允许上传的文件类型
+        multiple:true,//支持多文件上传
+        size: 1024*2,
+        done: function(res, index, upload){ //假设code=0代表上传成功
+        	if(isObjNotEmpty(res.data)){
+        		if(res.data.length>0){
+        			$("#user_url").val(res.data[0].fileurl);
+        			$("#user_url_icon_div").html("<img height='40px' width='40px' src='"+res.data[0].fileurl+"'>");
+        		}
+        	}
+        }
+    });
+    form.on('submit(user_submit)', function(data){
+     	    var d = data.field;
+     	   submitData(d);
+           return false;
+       });
+    function submitData(data){
+    	admin.req({
+    		url:'wkrjsystemnew/wkrjUser/updateUserInfo',
+    		data:data,
+    		success:function(data){
+    			if(data.success){
+    				layer.msg("修改成功！");
+    				layui.index.render();
+    			}else{
+    				layer.msg(data.msg);
+    			}
+    		}
+    	});
+    }
+});
+function delUser_url(){
+	$("#user_url").val("");
+    $("#user_url_icon_div").html("");
+}
+</script>

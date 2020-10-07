@@ -1,0 +1,60 @@
+
+<style type="text/css">
+	.layui-edge-new{
+		position: absolute;
+	    left: 10px;
+	    top: 50%;
+	    margin-top: -8px;
+	    cursor: pointer;
+	    border-width: 6px;
+	    border-top-color: #c2c2c2;
+	    border-top-style: solid;
+	    border:0;
+	    -webkit-transition: all .3s;
+	}
+</style>
+  <title>模块管理</title>
+  
+	<script type="text/html" id="barModule">
+  		<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="deleteModule">删除</a>
+		<a class="layui-btn layui-btn-xs" lay-event="setPre">权限设置</a>
+	</script>
+	<script type="text/html" id="indexTpl1">
+    	{{d.LAY_TABLE_INDEX+1}}
+	</script>
+	<script type="text/html" id="indexTpl2">
+    	{{d.LAY_TABLE_INDEX+1}}
+	</script>
+	<script type="text/html" id="module_icon_f">
+		{{#  if(d.module_icon_new !=null && d.module_icon_new !="" &&d.module_icon_new !=undefined){ }}
+			<i class="layui-icon {{d.module_icon_new}}"></i>
+		{{#  } }}   		 
+	</script>	
+	<script type="text/html" id="per_icon_g">
+		{{#  if(d.perm_icon !=null && d.perm_icon !="" &&d.perm_icon !=undefined){ }}
+			<img alt='图片不存在' height='30' width='30' src='{{d.perm_icon}}'>
+		{{#  } }}   		 
+	</script>
+  <div class="layui-fluid">
+    <div class="layui-card" id="left_module">
+      <div class="layui-card-body">
+        <div style="padding-bottom: 10px;">
+          <button class="layui-btn layuiadmin-btn-list" data-type="module_add" ekper="wkrjsystemnew/wkrjModule/addModule">添加模块</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="module_update" ekper="wkrjsystemnew/wkrjModule/updateModule">修改模块</button>
+        </div>
+        <table id="lay_module_list" lay-filter="lay_module_list"></table> 
+      </div>
+    </div>
+    <div class="layui-card layui-col-md4" style="display:none;"  id="right_per">
+      <div class="layui-card-body">
+        <div style="padding-bottom: 10px;">
+          <button class="layui-btn layuiadmin-btn-list" data-type="permission_add" ekper="wkrjsystemnew/wkrjPermission/addPermission">添加</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="permission_update" ekper="wkrjsystemnew/wkrjPermission/updatePermission">修改</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="permission_del" ekper="wkrjsystemnew/wkrjPermission/delPermission">删除</button>
+        </div>
+        <table id="lay_permission_list" lay-filter="lay_permission_list"></table> 
+      </div>
+    </div>
+  </div>
+  <script src="./main/views/wkrj/module/js/module.js"></script>
+  <script src="./main/views/public/btn_authority.js"></script>

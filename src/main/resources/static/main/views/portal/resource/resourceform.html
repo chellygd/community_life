@@ -1,0 +1,87 @@
+
+
+<div class="layui-form" lay-filter="layuiadmin-form-resourceadmin" style="padding: 20px 0 0 0;">
+	 <script type="text/html" template>
+	<input type="hidden" name="resource_id" value="{{ d.params.resource_id || '' }}">
+	</script>
+  <div class="layui-form-item">
+    <label class="layui-form-label">资源图片</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="hidden" id="resource_pic" name="resource_pic" value="{{ d.params.resource_pic|| '' }}" lay-verify="required"  autocomplete="off" class="layui-input">
+      </script>
+    </div>
+     <button style="float: left;" type="button" class="layui-btn" id="layuiadmin-upload-useradmin">上传图片</button> 
+    <div id="btImg_div"></div>
+    
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">资源名称</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="resource_name" value="{{ d.params.resource_name || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+
+ <div class="layui-form-item">
+    <label class="layui-form-label">排序</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="sort" value="{{ d.params.sort || '' }}" lay-verify="required"autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+    <div class="layui-form-item">
+    <label class="layui-form-label">发布时间</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="input_time" id="input_time" value="{{ d.params.input_time || '' }}" lay-verify="required"  class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label"></label>
+    <div class="layui-input-block">
+      <input type="button" lay-submit lay-filter="LAY-resource-front-submit" value="确认" class="layui-btn">
+    </div>
+  </div>
+</div>
+<script>
+
+layui.use(['admin', 'form', 'upload','laydate'], function(){
+	  var $ = layui.$
+	  ,admin = layui.admin
+	  ,form = layui.form
+	  ,upload = layui.upload
+	  ,laydate = layui.laydate;
+	  
+	  
+  //日期时间选择器
+  laydate.render({ 
+    elem: '#input_time'
+    ,type: 'datetime'
+  });
+  
+  form.render();
+  
+  
+  //上传头像
+  upload.render({
+    elem: '#layuiadmin-upload-useradmin'
+    ,url: 'wkrj/resource/uploadResourceTitlePic'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,done: function(res){
+       $("#resource_pic").val(res.path)
+     $("#btImg_div").html("<img src=\""+res.path+"\" style=\"width:200px;height:150px;\">");
+      
+    }
+  });
+  
+  
+  
+ 
+})
+</script>

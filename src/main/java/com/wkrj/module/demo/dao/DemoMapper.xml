@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 测试 -->
+<mapper namespace="com.wkrj.module.demo.dao.DemoDao">
+
+    <resultMap id="demoMap" type="Demo">
+        <result column="file_id" property="fileId" />
+        <result column="file_realname" property="fileRealname" />
+        <result column="file_name" property="fileName" />
+        <result column="addtime" property="addtime" />
+        <result column="zb_id" property="zbId" />
+    </resultMap>
+
+    <select id="listDemo" resultMap="demoMap">
+        select file_id,file_realname,zb_id from wkrj_bus_file
+    </select>
+
+    <select id="test" resultType="Demo">
+        select * from wkrj_bus_file
+    </select>
+</mapper>

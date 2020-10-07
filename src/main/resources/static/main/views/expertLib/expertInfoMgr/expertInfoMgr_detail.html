@@ -1,0 +1,142 @@
+
+<div class="layui-form" lay-filter="layuiadmin-form-detailExpert" style="padding: 20px 0 0 0;">
+	<div class="layui-form-item">
+		<label class="layui-form-label" >姓名</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="name" value="{{ d.params.name || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">性别</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="sex" value="{{ d.params.sex || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">身份证号</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="cardid" value="{{ d.params.cardid || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">职称</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="zc" value="{{ d.params.zc || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">擅长类型</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="exp_type" value="{{ d.params.exp_type || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">单位名称</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="dwmc" value="{{ d.params.dwmc || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">职务</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="zw" value="{{ d.params.zw || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">通讯地址</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="addr" value="{{ d.params.addr || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">邮政编码</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="yzbm" value="{{ d.params.yzbm || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">手机</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="phone" value="{{ d.params.phone || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">电话</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="tel_phone" value="{{ d.params.tel_phone || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">电子邮箱</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="email" value="{{ d.params.email || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">银行卡账户</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" style="width:270px;" readonly="readonly" name="bankCard" value="{{ d.params.bankCard || '' }}" lay-verify="required" placeholder="" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">工作简历</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<textarea readonly="readonly" style="width:270px;" name="introduce" class="layui-textarea">{{ d.params.introduce || '' }}</textarea>
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">推荐意见</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<textarea readonly="readonly" style="width:270px;" name="comment" class="layui-textarea">{{ d.params.comment || '' }}</textarea>
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label"></label>
+		<div class="layui-input-inline">
+			<input type="button" value="取消" class="layui-btn" onclick="close_win()">
+		</div>
+	</div>
+</div>
+<script>
+layui.use(['admin', 'form', 'upload'], function(){
+  var $ = layui.$
+  ,form = layui.form
+  ,admin = layui.admin
+  ,upload = layui.upload;
+  
+})
+function close_win(){
+  parent.layer.closeAll();
+} 
+</script>
+

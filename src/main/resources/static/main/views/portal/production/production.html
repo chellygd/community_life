@@ -1,0 +1,347 @@
+<title>作品管理</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">创客空间门户管理</a>
+    <a><cite>作品管理</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-productionfront-formlist">
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">作品名称</label>
+          <div class="layui-input-block">
+            <input type="text" name="production_name" placeholder="请输入（可模糊查询）" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-inline">
+          <label class="layui-form-label">作者</label>
+          <div class="layui-input-block">
+            <input type="text" name="author" placeholder="请输入（可模糊查询）" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-production-front-search">
+            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="addProduction">发布</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="updateProduction">修改</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="delProduction">删除</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="istopProduction">置顶/取消置顶</button>
+      </div>
+      
+      <table id="production-table-page" lay-filter="production-table-page"></table>
+    
+    
+    </div>
+  </div>
+</div>
+ <style>
+.laytable-cell-1-title_pic{
+		width:60px;
+		height:60px;
+}
+</style> 
+  <script type="text/html" id="imgTpl"> 
+        <img style="display: inline-block; width: 100%; height: 100%;" src= {{ d.production_pic }}>
+      </script> 
+    <script>
+//var ue = UE.getEditor('editor');
+layui.use(['admin', 'useradmin', 'table'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,view = layui.view
+  ,table = layui.table
+  ,form = layui.form;
+  
+  form.render(null, 'layadmin-productionfront-formlist');
+  
+  //table
+      table.render({
+      elem: '#production-table-page'
+      ,url: 'wkrj/production/productionList'
+      ,cols: [[
+             {type:'checkbox', fixed: 'left'}
+            ,{field:'production_pic', title: '作品标题图片',width:'10%',fixed: 'left', templet:'#imgTpl'}
+            ,{field:'production_name',width:'12%',title: '作品名称'}	 
+            ,{field:'production_info',width:'18%',title: '作品简介'}	 
+	   	    ,{field:'district',width:'10%',title: '地区'}	 
+	   	    ,{field:'school_name',width:'10%',title: '学校'}	 
+	   	    ,{field:'type',width:'8%',title: '类型'}	
+	   	    ,{field:'adviser',width:'8%',title: '指导老师'}	
+	   	    ,{field:'author',width:'8%',title: '作者'}	
+	   		,{field:'istop',width:'8%',title: '是否置顶',templet: '#istop'}  
+   	   		,{field:'sort',width:'5%',title: '排序'}  	   
+      ]]
+      ,page: true
+      ,done: function(res, curr, count){
+  		var response = layui.setter.response;
+  		//登录状态失效，清除本地 access_token，并强制跳转到登入页
+  		if(res[response.statusName] == response.statusCode.logout){
+  			view.exit();
+  		}
+  	}
+  	,where: { //通过 request 头传递
+  		access_token: layui.data('layuiAdmin').access_token
+  	}
+    });
+  
+  //监听搜索
+  form.on('submit(LAY-production-front-search)', function(data){
+	  var field = data.field;
+    //执行重载
+    table.reload('production-table-page', {
+      where: field
+    });
+  });
+  
+  //事件
+  var active = {
+   addProduction: function(){
+      admin.popup({
+        title: '发布作品'
+        ,area: ['1200px', '770px']
+        ,id: 'LAY-popup-production-add'
+        ,success: function(layero, index){
+          view(this.id).render('portal/production/productionform').done(function(){
+            form.render(null, 'layuiadmin-form-productionadmin');
+            //监听提交
+            form.on('submit(LAY-production-front-submit)', function(data){
+              var field = data.field; //获取提交的字段
+              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              //$.ajax({});
+         	
+			 	var file_url = "";
+				var array1 = $("input[name='fileurl']");
+				for(var i=0;i<array1.length;i++){
+				    var oth = $(array1[i]).attr("value");    //获取value
+				    file_url+=oth+",";
+				}
+				if("" != file_url && null != file_url){
+					file_url = file_url.substring(0, file_url.length-1);
+		
+				}else{
+					layer.msg("请上传作品图");
+					return false;
+				} 
+				
+				
+				field["file_url"]=file_url;
+
+              
+               admin.req({
+                  url: 'wkrj/production/addProduction'
+                  ,type: 'post'
+                  ,data: field
+                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+						 try {
+                		  res=eval('('+res+')');
+            			} catch (e) {}
+            			if(res.success){
+            				layer.msg("发布成功");
+            	              layer.close(index); //执行关闭 
+            				layui.table.reload('production-table-page'); //重载表格
+            			}else {
+            				layer.msg("发布失败");
+						}
+                  }
+                 }); 
+             
+              
+
+             // layer.msg('发布成功');
+            });
+          });
+        }
+      });
+    },
+    updateProduction:function(){
+    	var checkStatus = table.checkStatus('production-table-page'),
+	  	    data = checkStatus.data;
+	  	    if(data.length != 1){
+	  	    	layer.msg("请选择一条信息进行编辑！");
+	  	    	return;
+	  	    }
+        admin.popup({
+            title: '编辑作品'
+            ,area: ['1200px', '770px']
+            ,id: 'LAY-popup-production-update'
+            ,success: function(layero, index){
+            	data[0].input_time=new Date(data[0].input_time).Format();
+              view(this.id).render('portal/production/productionform',data[0]).done(function(){
+            	  
+            	  $("#btImg_div").html("<img src=\""+data[0].production_pic+"\" style=\"width:200px;height:150px;\">");
+            	  
+            	  $.ajax({
+    				url:'wkrj/production/getProductionFileById',
+    				data:{production_id:data[0].production_id,access_token: layui.data('layuiAdmin').access_token},
+    				dataType:'json',
+    				type:'post',
+    				success:function(result){
+    					var html = "";
+    				for (var i = 0; i < result.length; i++) {
+    					  html += "<div style='width:200px;height:150px;float:left;'><input type=\"hidden\" name=\"fileurl\" value='"+ result[i].file_url +"'><img src=\""+result[i].file_url+"\" style=\"width:190px;height:150px;\"><a href=\"javascript:void(0);\" onclick=\"delImgByPath('"+result[i].file_url+"',this)\">X</a></div>";
+    				}
+    			            $('#btImg_div2').append(html);
+    				}
+    			});
+          		
+                form.render(null, 'layuiadmin-form-productionadmin');
+                
+                //监听提交
+                form.on('submit(LAY-production-front-submit)', function(data){
+                  var field = data.field; //获取提交的字段
+                  
+          	 	var file_url = "";
+				var array1 = $("input[name='fileurl']");
+				for(var i=0;i<array1.length;i++){
+				    var oth = $(array1[i]).attr("value");    //获取value
+				    file_url+=oth+",";
+				}
+				if("" != file_url && null != file_url){
+					file_url = file_url.substring(0, file_url.length-1);
+		
+				}else{
+					layer.msg("请上传作品图");
+					return false;
+				} 
+				
+				
+				field["file_url"]=file_url;
+                  
+                  
+                  //提交 Ajax 成功后，关闭当前弹层并重载表格
+                  //$.ajax({});
+                   admin.req({
+                      url: 'wkrj/production/updateProduction'
+                      ,type: 'post'
+                      ,data: field
+                      ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	  try {
+                    		  res=eval('('+res+')');
+                			} catch (e) {}
+                			if(res.success){
+                				layer.msg("编辑成功");
+                				layui.table.reload('production-table-page'); //重载表格
+                                layer.close(index);
+                			}else {
+                				layer.msg("编辑失败");
+							}
+                       
+                      }
+                     }); 
+                 
+                   //执行关闭 
+                });
+              });
+            }
+          });
+        },
+        delProduction: function(){
+            var checkStatus = table.checkStatus('production-table-page')
+            ,checkData = checkStatus.data; //得到选中的数据
+
+            if(checkData.length === 0){
+              return layer.msg('请选择数据');
+            }
+            var productionIds = "";
+            var paths = "";
+	  	      for(var i=0;i<checkData.length;i++){
+	  	    	productionIds += checkData[i].production_id+",";
+	  	    	paths += checkData[i].production_pic+",";
+	  	      }
+	  	      if(null != productionIds && ""!= productionIds){
+	  	    	productionIds = productionIds.substring(0, productionIds.length-1);
+	  	    	paths = paths.substring(0, paths.length-1);
+              layer.confirm('确定删除吗？', function(index) {
+            	   admin.req({
+                       url: 'wkrj/production/delProduction'
+                       ,type: 'post'
+                       ,data: {ids:productionIds,paths:paths}
+                       ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	   try {
+                     		  res=eval('('+res+')');
+                 			} catch (e) {}
+                 			if(res.success){
+                				layer.msg("删除成功");
+                				layui.table.reload('production-table-page'); //重载表格
+                                layer.close(index);
+                			}else {
+                				layer.msg("删除失败");
+							}
+                        
+                       }
+                      }); 
+               
+              });
+	  	      }
+          },istopProduction:function(){
+			   var checkStatus = table.checkStatus('production-table-page')
+	  	  	      ,data = checkStatus.data;
+	  	  	      if(data.length != 1){
+	  	  	    	  layer.msg("请选择一条信息进行置顶！");
+	  	  	    	  return;
+	  	  	      }
+	  	  	  
+	  	     	var istop = data[0].istop;
+	  	     	if (istop==1) {
+	  	     		istop=2;
+				}else{
+				
+					istop=1;
+				}
+	  	      var productionId = data[0].production_id;
+	  	      if(null != productionId && ""!= productionId){
+ 
+	  	       layer.confirm('确定置顶或取消吗？', function(index) {
+            	   admin.req({
+                       url: 'wkrj/production/istopProduction'
+                       ,type: 'post'
+                       ,data: {id:productionId,istop:istop}
+                       ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	   try {
+                     		  res=eval('('+res+')');
+                 			} catch (e) {}
+                 			if(res.success){
+                				layer.msg("置顶或取消成功")
+                				layui.table.reload('production-table-page'); //重载表格
+                			}else {
+                				layer.msg("置顶或取消失败！");
+							}
+                        
+                       }
+                      }); 
+               
+              });
+   
+	  	  	    
+	        }
+			
+			
+		}
+  };
+  
+  $('.layui-btn.layuiadmin-btn-useradmin').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+});
+</script>
+<script src="plug-in/public/public.js"></script>
+<script type="text/html" id="istop">
+    {{#  if(d.istop==1){ }}
+		<span style="color:red">是</span>
+	{{#  } else { }}
+		否
+	{{#  } }}
+</script>

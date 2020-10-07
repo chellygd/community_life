@@ -1,0 +1,137 @@
+<title>市级管理</title>
+  
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a><cite>创客空间门户管理</cite></a>
+    <a><cite>组织机构管理</cite></a>
+    <a><cite>基础信息维护</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">   
+  <div class="layui-card">    
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-admin" data-type="batchdel">修改</button>
+      </div>
+      <table id="MyDept-MyDeptManage-table" lay-filter="MyDept-MyDeptManage-table"></table>  
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'useradmin', 'table'], function(){
+	var $ = layui.$
+	,admin = layui.admin
+	,view = layui.view
+	,table = layui.table
+	,form = layui.form;
+  
+	form.render(null, 'layadmin-useradmin-formlist');
+  
+	table.render({
+		 elem: '#MyDept-MyDeptManage-table'
+		,url:'wkrj/countyManage/getMyDeptInfo'
+		,cols: [[
+	         {type:'checkbox'}
+			,{field:'dept_name', title: '名称'}
+			,{field:'dept_type', title: '部门类型'}
+			,{field:'dept_order', title: '显示顺序'}
+			,{field:'dept_other', title: '备注信息'}
+			]]
+		,page: true
+		,done: function(res, curr, count){
+	  		var response = layui.setter.response;
+	  		//登录状态失效，清除本地 access_token，并强制跳转到登入页
+	  		if(res[response.statusName] == response.statusCode.logout){
+	  			view.exit();
+	  		}
+	  	}
+	  	,where: { //通过 request 头传递
+	  		access_token: layui.data('layuiAdmin').access_token
+	  	}
+	});
+
+  //事件
+  var active = {
+	batchdel: function(){
+      var checkStatus = table.checkStatus('MyDept-MyDeptManage-table')
+      data = checkStatus.data; //得到选中的数据
+      if(data.length != 1){
+        return layer.msg('请选择一条数据');
+      }
+      if(data[0].dept_id.length == 9){
+    	  admin.popup({
+   	        title: '修改信息'
+   	        ,area: ['450px', '500px']
+   	        ,id: 'LAY-popup-city-edit'
+   	        ,success: function(layero, index){
+   	          	view(this.id).render('portal/deptInfo/editSchoolInfo',data[0]).done(function(){
+   	        
+   	            form.render(null, 'layuiadmin-form-editSchoolInfo');
+   	            
+   	            //监听提交
+   	            form.on('submit(LAY-City-submit)', function(data){
+   	              var field = data.field; //获取提交的字段
+   	              console.dir(field);
+   	              //提交 Ajax 成功后，关闭当前弹层并重载表格
+   	              admin.req({
+   	                  url: 'wkrj/countyManage/editMyDeptInfo'
+   	                  ,type: 'get'
+   	                  ,data: field
+   	                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+   	         			if(res.success){
+   	         				layer.msg("修改成功");
+   	         			}else{
+   	         				layer.msg(res.msg);
+   	         			}
+		   	              layer.close(index); //执行关闭 
+		   	              layui.table.reload('MyDept-MyDeptManage-table'); //重载表格
+   	                  }
+   	              });
+   	            });
+   	          });
+   	        }
+   	      });
+      } else {
+    	  admin.popup({
+   	        title: '修改信息'
+   	        ,area: ['450px', '450px']
+   	        ,id: 'LAY-popup-city-edit'
+   	        ,success: function(layero, index){
+   	          	view(this.id).render('portal/deptInfo/editDeptInfo',data[0]).done(function(){
+   	        
+   	            form.render(null, 'layuiadmin-form-editDeptInfo');
+   	            
+   	            //监听提交
+   	            form.on('submit(LAY-City-submit)', function(data){
+   	              var field = data.field; //获取提交的字段
+   	              //提交 Ajax 成功后，关闭当前弹层并重载表格
+   	              admin.req({
+   	                  url: 'wkrj/countyManage/editMyDeptInfo'
+   	                  ,type: 'get'
+   	                  ,data: field
+   	                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+   	                	 console.dir(res);
+   	         			if(res.success){
+   	         				layer.msg("修改成功");
+   	         			}else{
+   	         				layer.msg(res.msg);
+   	         			}
+		   	              layer.close(index); //执行关闭 
+		   	              layui.table.reload('MyDept-MyDeptManage-table'); //重载表格
+   	                  }
+   	              });
+   	            });
+   	          });
+   	        }
+   	      });
+      }
+    }
+  }  
+  $('.layui-btn.layuiadmin-btn-admin').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+});
+</script>

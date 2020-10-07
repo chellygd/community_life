@@ -1,0 +1,166 @@
+
+
+<div class="layui-form" lay-filter="layuiadmin-form-productionadmin" style="padding: 20px 0 0 0;">
+	 <script type="text/html" template>
+	<input type="hidden" name="production_id" value="{{ d.params.production_id || '' }}">
+	</script>
+  <div class="layui-form-item">
+    <label class="layui-form-label">标题图片</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="hidden" id="production_pic" name="production_pic" value="{{ d.params.production_pic || '' }}" lay-verify="required"  autocomplete="off" class="layui-input">
+      </script>
+    </div>
+     <button style="float: left;" type="button" class="layui-btn" id="layuiadmin-upload">上传图片</button> 
+    <div id="btImg_div"></div>
+    
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">作品名称</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="production_name" value="{{ d.params.production_name || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">作品简介</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="production_info" value="{{ d.params.production_info || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">地区</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="district" value="{{ d.params.district || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">学校</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="school_name" value="{{ d.params.school_name || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">类型</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="type" value="{{ d.params.type || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">指导教师</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="adviser" value="{{ d.params.adviser || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">作者</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="author" value="{{ d.params.author || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+ 
+ <div class="layui-form-item">
+    <label class="layui-form-label">排序</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="sort" value="{{ d.params.sort || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+    <div class="layui-form-item">
+    <label class="layui-form-label">发布时间</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="input_time" id="input_time" value="{{ d.params.input_time || '' }}" lay-verify="required"  class="layui-input">
+      </script>
+    </div>
+  </div>
+    <div class="layui-form-item">
+    <label class="layui-form-label">作品图片</label>
+
+    <div id="btImg_div2"></div>
+     <button style="float: left;" type="button" class="layui-btn" id="layuiadmin-upload2">多图上传</button> 
+    
+  </div>
+  
+  
+  <div class="layui-form-item">
+    <label class="layui-form-label"></label>
+    <div class="layui-input-block">
+      <input type="button" lay-submit lay-filter="LAY-production-front-submit" value="确认" class="layui-btn">
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src="plug-in/jquery/jquery-1.9.1.min.js"></script>
+<script>
+
+layui.use(['admin', 'form', 'upload','laydate'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,form = layui.form
+  ,upload = layui.upload
+  ,laydate = layui.laydate;
+	//日期时间选择器
+	  laydate.render({ 
+	    elem: '#input_time'
+	    ,type: 'datetime'
+	  });
+  
+  form.render();
+  //上传头像
+  upload.render({
+    elem: '#layuiadmin-upload'
+    ,url: 'wkrj/production/uploadProductionPic'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,done: function(res){
+       $("#production_pic").val(res.path)
+     $("#btImg_div").html("<img src=\""+res.path+"\" style=\"width:200px;height:150px;\">");
+      
+    }
+  });
+  upload.render({
+    elem: '#layuiadmin-upload2'
+    ,url: 'wkrj/production/uploadProductionPic'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,multiple:true
+    ,done: function(res){
+    	 var html = "<div style='width:200px;height:150px;float:left;'><input type=\"hidden\" name=\"fileurl\" value='"+ res.path +"'><img src=\""+res.path+"\" style=\"width:190px;height:150px;\"><a href=\"javascript:void(0);\" onclick=\"delImgByPath('"+res.path+"',this)\">X</a></div>";
+           $("#btImg_div2").append(html);
+      
+    }
+  });
+
+})
+  	//删除图片
+	function delImgByPath(filePath,obj){
+		$.ajax({
+				type:"post",
+				url:'wkrj/production/delProductionFile',
+				data:{filePath:filePath},
+				success:function(data){
+					console.dir(data)
+					if(data.success){
+						$(obj).parent().remove();
+					}
+				}
+			});
+		
+		}
+</script>

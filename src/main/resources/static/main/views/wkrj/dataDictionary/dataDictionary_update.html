@@ -1,0 +1,121 @@
+  <style>
+  	.layui-form-item .layui-input-inline {
+	    width: 330px;
+	}
+  </style>
+  <!-- 下拉树插件 -->
+  <script src="./main/views/component/select_tree/formSelects-v4.js"></script>
+  <link rel="stylesheet" href="./main/views/component/select_tree/formSelects-v4.css">
+  <form class="layui-form" lay-filter="layuiadmin-data-update-list" id="layuiadmin-data-update-list">
+  <div style="padding: 20px 30px 0 0;">
+    <div class="layui-form-item">
+      <label class="layui-form-label">字典名称</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="text" name="typename" value="{{ d.params.typename || '' }}" lay-verify="required" placeholder="请输入字典名称" autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">字典编码</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="text" name="typecode" value="{{ d.params.typecode || '' }}" lay-verify="required" placeholder="请输入字典编码" autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">上级字典</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template lay-done="layui.data.sendParams(d.params)">
+			<select name="typeparentid" xm-select="example6_10" xm-select-radio>
+    		</select>
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item" style="display: flex;">
+      <label class="layui-form-label">图标</label>
+      <button type="button" class="layui-btn" id="data_img">
+          <i class="layui-icon">&#xe67c;</i>上传图标
+      </button>
+      <input type="hidden" name="icon" id="icon" value="">
+      <div id="icon_data_div" style="margin-left:50px;"></div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">显示顺序</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="number" name="sort" value="{{ d.params.sort || 0 }}"  min="0" lay-verify="required|number|number_new" value="0" autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <div class="layui-form-item">
+      <label class="layui-form-label">备注信息</label>
+      <div class="layui-input-inline">
+        <script type="text/html" template>
+          <input type="text" name="value" value="{{ d.params.value || '' }}"  placeholder="请输入备注信息" autocomplete="off" class="layui-input">
+        </script>
+      </div>
+    </div>
+    <script type="text/html" template>
+      <input type="hidden" name="id" value="{{ d.params.id || '' }}">
+    </script>
+    <div class="layui-form-item">
+      <label class="layui-form-label"></label>
+      <div class="layui-input-inline">
+        <input type="button" lay-submit lay-filter="layuiadmin-data-update-submit" value="提交" class="layui-btn">
+        <input type="button" onclick="close_data()" value="取消" class="layui-btn">
+      </div>
+    </div>
+  </div>
+  </form>
+  <script>
+$(function(){
+	layui.use(['upload','layer'],function () {
+	    var upload = layui.upload,layer = layui.layer;
+	    var form=layui.form;
+	       //自定义验证
+		form.verify({
+		    number_new: function(value, item){ //value：表单的值、item：表单的DOM对象
+		      if(value<0){
+		        return '不能小于0';
+		      }
+		    }
+		});	
+		//普通图片上传
+    var uploadInst = upload.render({
+        elem: '#data_img',//绑定的元素
+        url: 'wkrjsystemnew/upload/uploadModule?access_token='+layui.data('layuiAdmin').access_token,
+        //data: {access_token: layui.data('layuiAdmin').access_token},
+        auto:true,//是否自动上传
+        accept:"images",//指定允许上传的文件类型
+        multiple:true,//支持多文件上传
+        size: 1024*2,
+        done: function(res, index, upload){ //假设code=0代表上传成功
+        	if(isObjNotEmpty(res.data)){
+        		if(res.data.length>0){
+        			$("#icon").val(res.data[0].fileurl);
+        			$("#icon_data_div").html("<img height='40px' width='40px' src='"+res.data[0].fileurl+"'>");
+        		}
+        	}
+        }
+    });
+	});	
+})
+layui.data.sendParams = function(params){
+	var typeparentid=params.typeparentid;
+	console.dir(params.id)
+		layui.formSelects.data('example6_10', 'server', {
+            url: 'wkrjsystemnew/wkrjDataDictionary/getDataDictionaryTree?access_token='+layui.data('layuiAdmin').access_token,//模块树
+            data:{id:params.id},
+            success:function(){
+            	if(isObjNotEmpty(typeparentid)){
+            		layui.formSelects.value('example6_10', [typeparentid], true);
+            	}
+            }
+        }); 
+}
+function close_data(){
+  parent.layer.closeAll();
+}
+	</script>

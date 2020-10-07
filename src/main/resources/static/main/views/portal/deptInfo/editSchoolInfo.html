@@ -1,0 +1,125 @@
+<div class="layui-form" lay-filter="layuiadmin-form-editSchoolInfo" style="padding: 20px 0 0 0;">
+	<script type="text/html" template>
+		<input type="text" name="dept_name" value="{{ d.params.dept_name || '' }}" class="layui-input" style="display: none;">
+	</script>
+	<script type="text/html" template>
+		<input type="text" name="dept_id" value="{{ d.params.dept_id || '' }}" class="layui-input" style="display: none;">
+	</script>
+	<script type="text/html" template>
+   		<input type="text" name="dept_parent_id" value="{{ d.params.dept_parent_id || '' }}" class="layui-input" style="display: none;">
+	</script>
+	<script type="text/html" template>
+   		<input type="text" name="dept_type" value="{{ d.params.dept_type || '' }}" class="layui-input" style="display: none;">
+	</script>
+	
+	<div class="layui-form-item">
+		<label class="layui-form-label">名称</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" name="repeat_name" value="{{ d.params.dept_name || '' }}" lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">显示顺序</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="number" name="dept_order" value="{{ d.params.dept_order || '' }}" lay-verify="required" placeholder="显示顺序" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">备注信息</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" name="dept_other" value="{{ d.params.dept_other || '' }}" placeholder="备注信息" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">学段</label>
+		<script type="text/html" template>
+   			<input type="hidden" id="dept_type" name="dept_type" value="{{ d.params.dept_type || '' }}" class="layui-input" style="display: none;">
+		</script>
+		<div class="layui-input-inline" id="dept_type">
+			<script type="text/html" template lay-url="wkrj/orgSchools/getSchoolType" lay-done="layui.data.getMydeptType(d)">
+				{{# var types = d.params.dept_type.split(","); }}
+				{{# for(var i=0;i<d.data.length;i++){ }}
+				{{# var flag = false; }}
+				{{# for(var j=0;j<types.length;j++){ }}
+    			{{# if(d.data[i].school_type_name == types[j]){ }}
+     			{{# flag = true; break;}}
+    			{{# } }}
+   				{{# } }}
+   				{{# if(flag){ }}
+    			<input type="checkbox" lay-filter="schoolTypeFilter" value="{{d.data[i].school_type_name}}" lay-skin="primary" title="{{d.data[i].school_type_name}}" checked>
+   				{{# }else{ }}
+    			<input type="checkbox" lay-filter="schoolTypeFilter" value="{{d.data[i].school_type_name}}" lay-skin="primary" title="{{d.data[i].school_type_name}}">
+   				{{# } }}
+  				{{# } }}
+      		</script>
+		</div>
+        
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">班级数</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="number" name="school_classNum" value="{{ d.params.school_classNum || '' }}" placeholder="班级数" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">学生数</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="number" name="school_stuNum" value="{{ d.params.school_stuNum || '' }}" placeholder="学生数" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label"></label>
+		<div class="layui-input-inline">
+			<input type="button" lay-submit lay-filter="LAY-City-submit" value="确认" class="layui-btn">
+			<input type="button" value="取消" class="layui-btn" onclick="close_data()">
+		</div>
+	</div>
+</div>
+<script>
+layui.use(['admin', 'form', 'upload'], function(){
+  var $ = layui.$
+  ,form = layui.form
+  ,upload = layui.upload;
+  
+  form.on('checkbox(schoolTypeFilter)', function(data) {
+      var type = $("#dept_type").val().replace(/(^\s*)|(\s*$)/g, "");
+      if (type.length == 1) {
+          if (type.indexOf(',') >= 0) {
+              type = "";
+          }
+      }
+      if (type.length > 1) {
+          var a1 = type.substr(type.length - 1, 1);
+          if (a1.indexOf(',') < 0) {
+              type = type + ",";
+          }
+      }
+      if (data.elem.checked) {
+          $("#dept_type").val(type + data.elem.title + ",");
+      } else {
+          $("#dept_type").val(type.replace(eval("/" + data.elem.title + ",/g"), ""));
+      }
+  });
+  
+})
+
+layui.data.getMydeptType = function(d){
+ layui.use(['form'], function(){
+     var form = layui.form;
+      form.render(null, 'layuiadmin-form-editSchoolInfo'); //渲染该模板下的动态表单
+   });
+}
+function close_data(){
+  parent.layer.closeAll();
+}
+</script>

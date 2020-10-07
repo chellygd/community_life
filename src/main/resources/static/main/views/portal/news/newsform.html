@@ -1,0 +1,104 @@
+
+
+<div class="layui-form" lay-filter="layuiadmin-form-newsadmin" style="padding: 20px 0 0 0;">
+	 <script type="text/html" template>
+	<input type="hidden" name="news_id" value="{{ d.params.news_id || '' }}">
+	</script>
+  <div class="layui-form-item">
+    <label class="layui-form-label">标题图片</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="hidden" id="title_pic" name="title_pic" value="{{ d.params.title_pic || '' }}" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+     <button style="float: left;" type="button" class="layui-btn" id="layuiadmin-upload-useradmin">上传图片</button> 
+    <div id="btImg_div"></div>
+    
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">标题</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="news_title" value="{{ d.params.news_title || '' }}" lay-verify="required" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">来源</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="source" value="{{ d.params.source || '' }}" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">关键字(多个标签用逗号分割)</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="tags" value="{{ d.params.tags || '' }}" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">正文</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <textarea type="hidden" id="editor" name="news_content" value="{{ d.params.news_content || '' }}"   autocomplete="off" class="layui-textarea"></textarea>
+</script>
+    </div>
+  </div>
+ <div class="layui-form-item">
+    <label class="layui-form-label">排序</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="sort" value="{{ d.params.sort || '' }}" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">发布时间</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="input_time" id="input_time" value="{{ d.params.input_time || '' }}"  class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label"></label>
+    <div class="layui-input-block">
+      <input type="button" lay-submit lay-filter="LAY-news-front-submit" value="确认" class="layui-btn">
+    </div>
+  </div>
+</div>
+<script>
+
+layui.use(['admin', 'form', 'upload','laydate'], function(){
+  var $ = layui.$
+  ,form = layui.form
+  ,upload = layui.upload
+  ,laydate = layui.laydate;
+  //日期时间选择器
+  laydate.render({ 
+    elem: '#input_time'
+    ,type: 'datetime'
+  });
+
+  form.render();
+  
+  
+  //上传头像
+  upload.render({
+    elem: '#layuiadmin-upload-useradmin'
+    ,url: 'wkrj/news/uploadNewsTitlePic'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,done: function(res){
+       $("#title_pic").val(res.path)
+     $("#btImg_div").html("<img src=\""+res.path+"\" style=\"width:200px;height:150px;\">");
+      
+    }
+  });
+  
+})
+</script>

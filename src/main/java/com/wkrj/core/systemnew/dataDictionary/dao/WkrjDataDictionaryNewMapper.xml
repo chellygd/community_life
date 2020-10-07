@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wkrj.core.systemnew.dataDictionary.dao.WkrjDataDictionaryNewDao">
+	
+	<select id="getDataDictionaryTree" resultType="map" parameterType="java.lang.String">
+		
+		SELECT id,typecode,typename,typeid,typeparentid,value,icon,sort  
+		FROM `wkrj_sys_data_dictionary` 
+		where typeparentid = #{parentId}
+		<if test="null!=id and ''!=id">
+			and id !=#{id}		
+		</if>
+	
+	</select>
+	<select id="getDataDictionaryChildMaxByPid" resultType="java.lang.String" parameterType="java.lang.String">
+		
+		SELECT IF(ISNULL(MAX(id)),'00',MAX(id)) id FROM wkrj_sys_data_dictionary
+		where typeparentid = #{parentId}
+	
+	</select>
+	<insert id="addDataDictionary" parameterType="com.wkrj.core.systemnew.dataDictionary.bean.WkrjDataDictionaryNew" >
+		
+		insert wkrj_sys_data_dictionary(id,typecode,typename,typeid,typeparentid,value,icon,sort) 
+		values(#{id},#{typecode},#{typename},#{typeid},#{typeparentid},#{value},#{icon},#{sort})
+		
+	</insert>
+	<update id="updateDataDictionary" parameterType="com.wkrj.core.systemnew.dataDictionary.bean.WkrjDataDictionaryNew">
+	
+	   update wkrj_sys_data_dictionary set typecode=#{typecode},typename=#{typename},typeparentid=#{typeparentid},icon=#{icon},sort=#{sort} 
+	   where id=#{id}
+	
+	</update>
+	<select id="getDataDictionaryChildCount" resultType="int" parameterType="java.lang.String">
+		
+		SELECT count(id) 
+		FROM `wkrj_sys_data_dictionary` 
+		where typeparentid = #{parentId}
+	
+	</select>
+	<delete id="delDataDictionary">
+		delete from wkrj_sys_data_dictionary where id=#{id}
+	</delete>
+</mapper>
+

@@ -1,0 +1,108 @@
+<div class="layui-form" lay-filter="layuiadmin-form-mergeSchoolForm" style="padding: 20px 0 0 0;">
+	<script type="text/html" template>
+        <input type="hidden"  name="old_dept_id" value="{{ d.params.dept_id || '' }}">
+    </script>
+  <div class="layui-form-item">
+    <label class="layui-form-label">学校名称</label>
+    <div class="layui-input-inline">
+      <script type="text/html" template>
+        <input type="text" name="dept_name" value="{{ d.params.dept_name || '' }}" readonly="readonly" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">当前所属地</label>
+    <div class="layui-input-inline">
+      <script type="text/html" template>
+         <input type="text" name="areaBelong" value="{{ d.params.areaBelong || '' }}" class="layui-input" readonly="readonly">
+      </script>
+    </div>
+  </div>
+	<div class="layui-form-item">
+    <label class="layui-form-label">所属区县</label>
+    <div class="layui-input-inline">
+      <script type="text/html" template lay-url="wkrj/orgSchools/getOrgByParentId" lay-done="layui.data.getOrgDone_change(d)">
+      	<select lay-verify="required" lay-filter="countyFilter_merge" name="dept_parent_id">
+			<option value=''>请选择区县</option>
+              	{{# for(var i=0;i<d.data.length;i++){ }}
+					<option value="{{d.data[i].dept_id}}">{{d.data[i].dept_name}}</option>
+				{{# } }}
+		</select>      
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">合并到(学校)</label>
+    <div class="layui-input-inline">
+      <select id="schoolId_merge" name="dept_id" lay-verify="required">
+              		
+      </select>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label"></label>
+    <div class="layui-input-inline">
+      <input type="button" lay-submit lay-filter="LAY-portal-school-submit-merge" value="合并" class="layui-btn">
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'form', 'upload'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,form = layui.form
+  ,upload = layui.upload;
+  
+  form.on('select(countyFilter_merge)', function(data){
+	  //console.log(data.elem); //得到select原始DOM对象
+	  //console.log(data.value); //得到被选中的值
+	  //console.log(data.othis); //得到美化后的DOM对象
+	  var countyId = data.value;
+	  if(null == countyId || "" == countyId || undefined == countyId){
+		$("#schoolId_merge").html("");		     	
+		form.render(null, 'layuiadmin-form-mergeSchoolForm');		
+	  }else{
+		getSchoolByParentId_merge(countyId);
+	  }
+  });
+  
+  function getSchoolByParentId_merge(parentDeptId){
+	  admin.req({
+  		url:'wkrj/orgSchools/getOrgByParentId',
+  		data:{parentDeptId:parentDeptId},
+  		dataType:'json',
+  		success:function(result){			
+  			var html = "<option value=''>请选择学校</option>";
+  	     	if(null != result){		     		
+  	     		for(var i = 0; i<result.data.length;i++){
+  	     			html += "<option value='"+result.data[i].dept_id+"'>"+result.data[i].dept_name+"</option>";
+  	     		}
+  	     	}
+  	     	$("#schoolId_merge").html(html);
+  	     	//console.dir(html);
+  	     	form.render(null, 'layuiadmin-form-mergeSchoolForm');			
+  		}
+  	});
+  }
+  
+  //上传头像
+/*   upload.render({
+    elem: '#layuiadmin-upload-useradmin'
+    ,url: './json/upload/demo.js'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,done: function(res){
+      $(this.item).prev("div").children("input").val(res.data.src)
+    }
+  }); */
+})
+
+layui.data.getOrgDone_change = function(d){
+	layui.use(['form'], function(){
+	    var form = layui.form;
+	     form.render(null, 'layuiadmin-form-mergeSchoolForm'); //渲染该模板下的动态表单
+	  });
+}
+</script>

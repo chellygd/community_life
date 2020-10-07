@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测试Oauth接口</title>
+    <script src="../jquery/jquery-1.9.1.min.js"></script>
+    <script>
+        function pwd_a() {
+            $.post($("#pwd_url").val(), function (data) {
+                console.dir(data);
+                var html = "<p style='color:green;font-weight: bold;font-size: 1.2em;'>" +
+                    "{access_token: \"" + data.access_token + "\", token_type: \"" + data.token_type + "\", expires_in: " + data.expires_in + ", scope: \"" + data.scope + "\"}</p>"
+                $("#pwd_result").html(html);
+            });
+        }
+
+        function tolink_input(obj) {
+            $("#hhh").parent().attr("href", $("#" + obj).val());
+            $("#hhh").click();
+        }
+    </script>
+</head>
+<body>
+<h1>OAuth 2.0定义了四种授权方式</h1>
+<div>
+    <h4>密码模式（resource owner password credentials）</h4>
+    <h4>授权码模式（authorization code）</h4>
+    <h4>简化模式（implicit）</h4>
+    <h4>客户端模式（client credentials）</h4>
+</div>
+
+<hr/>
+<h2>一、授权码模式（推荐）</h2>
+<div>
+    <pre>
+        最常用的认证模式，支持refresh token。
+
+        请求流程如下：
+    </pre>
+    <h3>（1）使用client_id唤起带有code的回调</h3>
+    <pre>
+        通过浏览器访问以下地址时，首先判断该用户是否登录，如果已经登录，正常进入授权页面；如果未登录，会跳转至登录页面。
+        项目地址：http://localhost:8111/
+        请求地址：
+                <a onclick="tolink_input('code_url')" href="javascript:void(0);">点击测试</a>
+                <input id="code_url" type="text" style="width:100%;"
+                       value="http://localhost:8111/oauth/authorize?response_type=code&state=your_state&client_id=dev&redirect_uri=http://localhost:8111/login/code"/>
+        请求类型：GET
+        请求参数：
+            （1）response_type（必填）：固定值（code）
+            （2）client_id(必填）：客户端id
+            （3）redirect_uri（可选）：回调地址。如果有则必须和数据库中完全匹配；如果没有会自动根据数据库中地址进行回调
+            （4）scope（可选）：授权范围（与数据库scope匹配）
+            （5）state（可选）：你自己的自定义参数，会作为回调地址的参数，原样返回
+    </pre>
+    <h3>（2）授权（按需设置）</h3>
+    <pre>
+        当数据库字段autoapprove为true时，则该步骤自动跳过，即自动允许；
+        为false时，则需要用户手动授权。如下图：
+            <img src="./approve.png" style="border: 1px solid darkcyan;"/>
+            同意授权：跳转到回调地址，带参数?<font color="red">code=m4Q8DZ</font>&state=your_state
+            不同意授权：跳转到回调地址，带参数?<font color="red">error=access_denied</font>&error_description=User denied access&state=your_state
+    </pre>
+    <h3>（3）使用code换取access_token</h3>
+    <p></p>
+    <pre>
+        请求参数：
+            （1）grant_type（必填）：固定值（authorization_code）
+            （2）client_id（必填）：client_id
+            （3）client_secret（必填）：client_secret<font color="red">（私密信息，本请求整体应在应用的后端请求，不经过浏览器）</font>
+            （4）code（必填）：<font color="red">上一步获取的code</font>
+            （5）redirect_uri（必填）：http://localhost:8111/login/code（必须和数据库中回调地址，完全匹配）
+    </pre>
+    <pre>
+        返回值：
+            {
+            "access_token": "7217d700-463a-4e8d-ab52-246e152e8627",
+            "token_type": "bearer",
+            "refresh_token": "897f9bf7-6a7b-4a18-bd0e-cfd2826915e5",
+            "expires_in": 3599,
+            "scope": "user_info"
+            }
+    </pre>
+    <h3>（4）使用access_token换取数据</h3>
+    <h4>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <font color="red">3、4两步，在后台控制起内完成，例子在：systemnew/oauth/OauthClientLoginController.java</font>
+    </h4>
+</div>
+
+<hr/>
+<h2 style="color: red;">改造授权码模式</h2>
+<pre style="color:red;">
+    未登录的情况下，授权会自动跳转登录页。
+    登录后，需要重新打开授权页面。
+    增加一个中间层，记录用户认证地址，如果跳转到登录页，登录之后，继续认证。
+    <li>
+        请求地址：
+        <a onclick="tolink_input('code_url2')" href="javascript:void(0);">点击测试</a>
+        <input id="code_url2" type="text" style="width:100%;"
+               value="http://localhost:8111/wkrjsystemnew/wkrjlogin/tooauth?response_type=code&state=your_state&client_id=dev&redirect_uri=http://localhost:8111/login/code"/>
+    </li>
+</pre>
+
+<hr/>
+<h2>二、密码模式（不推荐）</h2>
+<div>
+    <p>一般只有client是自己的应用时，才会使用。</p>
+    <p>因为该模式需要在客户端存储用户名和密码，存在风险。</p>
+    <p>请求流程如下：</p>
+    <h3>使用client_id、client_secret、用户名、密码，直接获取access_token</h3>
+    <ul>
+        <li>项目地址：http://localhost:8111/</li>
+        <li>
+            请求地址：
+            <a onclick="pwd_a()" href="javascript:void(0);">点击测试</a>
+            <input id="pwd_url" type="text" style="width:100%;"
+                   value="http://localhost:8111/oauth/token?grant_type=password&username=wkrj&password=wkrj@123&client_id=dev&client_secret=dev"/>
+            <pre id="pwd_result"></pre>
+        </li>
+        <li>请求类型：POST（必须为POST方式）</li>
+        <li>请求参数：</li>
+        <pre>
+            （1）grant_type：固定值（password）
+            （2）username：必填 用户名 wkrj
+            （3）password：密码wkrj@123
+            （4）client_id：客户端id
+            （5）client_secret：客户端密钥
+        </pre>
+        <li>返回值：</li>
+        <pre>
+            {
+                "access_token": "e361c0cd-dfb9-494d-9908-3175592ae94f",
+                "token_type": "bearer",
+                "expires_in": 3451,
+                "scope": "read"
+            }
+        </pre>
+    </ul>
+</div>
+
+<hr/>
+<h2>三、简化模式（implicit）</h2>
+<p>减少code环节，直接携带access_token回调url（不支持Refresh token）</p>
+<pre>
+    https://localhost:8111/oauth/authorize?response_type=token&client_id=dev&redirect_uri=http://localhost:8111/login/code&scope=read
+    请求参数：
+            （1）response_type（必填）：固定值（token）
+            （2）client_id（必填）：client_id
+            （3）redirect_uri（必填）：http://localhost:8111/login/code（必须和数据库中回调地址，完全匹配）
+            （4）scope（可选）：授权范围（与数据库scope匹配）
+
+    成功后回调：
+    http://localhost:8111/login/code?token=7217d700-463a-4e8d-ab52-246e152e8627
+
+    剩余步骤，和授权码模式相同
+</pre>
+
+<hr/>
+<h2>四、客户端模式（client credentials）</h2>
+<pre>
+    https://localhost:8111/token?grant_type=client_credentials&client_id=dev&client_secret=dev
+    请求参数：
+            （1）grant_type（必填）：固定值（client_credentials）
+            （2）client_id（必填）：client_id
+            （3）client_secret（必填）：client_secret
+
+    返回结果：access_token。
+</pre>
+
+<a href="#" target="_blank" style="display: none;"><p id="hhh">链接</p></a>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<title>通知公告</title>
+  
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">创客空间门户管理</a>
+    <a><cite>通知公告</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-userfront-formlist">
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">标题</label>
+          <div class="layui-input-block">
+            <input type="text" name="notice_title" placeholder="请输入（可模糊查询）" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-notice-front-search">
+            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="addNotice">发布</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="updateNotice">修改</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="delNotice">删除</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="istopNotice">置顶/取消置顶</button>
+      </div>
+      
+      <table id="notice-table-page" lay-filter="notice-table-page"></table>
+      <script type="text/html" id="imgTpl"> 
+        <img style="display: inline-block; width: 50%; height: 100%;" src= {{ d.avatar }}>
+      </script> 
+      <script type="text/html" id="table-caozup">
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>
+      </script>
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'useradmin', 'table'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,view = layui.view
+  ,table = layui.table
+  ,form = layui.form;
+  
+  form.render(null, 'layadmin-userfront-formlist');
+  
+  //table
+      table.render({
+      elem: '#notice-table-page'
+      ,url: 'wkrj/notice/noticeList'
+      ,cols: [[
+               {type:'checkbox', fixed: 'left'}
+   	   	    ,{field:'sort',width:'5%',title: '排序', sort: true}  	           	   	      	   	  
+	   	    ,{field:'notice_title',width:'30%',title: '标题',}	 
+	   	    ,{field:'notice_url',width:'40%',title: '地址'}
+	   	    ,{field:'input_time',width:'12%',title: '发布时间', sort: true}  	           	   	      	   	  
+	   	    ,{field:'istop',width:'10%',title: '是否置顶',templet: '#istop'}  	       
+      ]]
+      ,page: true
+      ,done: function(res, curr, count){
+  		var response = layui.setter.response;
+  		//登录状态失效，清除本地 access_token，并强制跳转到登入页
+  		if(res[response.statusName] == response.statusCode.logout){
+  			view.exit();
+  		}
+  	}
+  	,where: { //通过 request 头传递
+  		access_token: layui.data('layuiAdmin').access_token
+  	}
+    });
+  
+  
+  
+  
+  //监听搜索
+  form.on('submit(LAY-notice-front-search)', function(data){
+	  var field = data.field;
+    //执行重载
+    table.reload('notice-table-page', {
+      where: field
+    });
+  });
+
+
+  
+  
+  //事件
+  var active = {
+    batchdel: function(){
+      var checkStatus = table.checkStatus('notice-table-page')
+      ,checkData = checkStatus.data; //得到选中的数据
+
+      if(checkData.length === 0){
+        return layer.msg('请选择数据');
+      }
+      
+      layer.prompt({
+        formType: 1
+        ,title: '敏感操作，请验证口令'
+      }, function(value, index){
+        layer.close(index);
+        
+        layer.confirm('确定删除吗？', function(index) {
+    
+          table.reload('notice-table-page');
+          layer.msg('已删除');
+        });
+      });
+    }
+    ,addNotice: function(){
+      admin.popup({
+        title: '发布通知'
+        ,area: ['500px', '450px']
+        ,id: 'LAY-popup-notice-add'
+        ,success: function(layero, index){
+          view(this.id).render('portal/notice/noticeform').done(function(){
+            form.render(null, 'layuiadmin-form-noticeadmin');
+            //监听提交
+            form.on('submit(LAY-notice-front-submit)', function(data){
+              var field = data.field; //获取提交的字段
+          
+               admin.req({
+                  url: 'wkrj/notice/addNotice'
+                  ,type: 'post'
+                  ,data: field
+                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+						 try {
+                		  res=eval('('+res+')');
+            			} catch (e) {}
+            			if(res.success){
+            				layer.msg("发布成功");
+            	              layer.close(index); //执行关闭 
+            				layui.table.reload('notice-table-page'); //重载表格
+            			}else {
+            				layer.msg("发布失败");
+						}
+                  }
+                 }); 
+             
+              
+
+             // layer.msg('发布成功');
+            });
+          });
+        }
+      });
+    },
+    updateNotice:function(){
+    	var checkStatus = table.checkStatus('notice-table-page'),
+	  	    data = checkStatus.data;
+	  	    if(data.length != 1){
+	  	    	layer.msg("请选择一条信息进行编辑！");
+	  	    	return;
+	  	    }
+        admin.popup({
+            title: '编辑通知'
+            ,area: ['500px', '450px']
+            ,id: 'LAY-popup-notice-update'
+            ,success: function(layero, index){
+              view(this.id).render('portal/notice/noticeform',data[0]).done(function(){
+            
+                form.render(null, 'layuiadmin-form-noticeadmin');
+                
+                //监听提交
+                form.on('submit(LAY-notice-front-submit)', function(data){
+                  var field = data.field; //获取提交的字段
+                  //提交 Ajax 成功后，关闭当前弹层并重载表格
+                  //$.ajax({});
+                   admin.req({
+                      url: 'wkrj/notice/updateNotice'
+                      ,type: 'post'
+                      ,data: field
+                      ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	  try {
+                    		  res=eval('('+res+')');
+                			} catch (e) {}
+                			if(res.success){
+                				layer.msg("编辑成功");
+                				layui.table.reload('notice-table-page'); //重载表格
+                                layer.close(index);
+                			}else {
+                				layer.msg("编辑失败");
+							}
+                       
+                      }
+                     }); 
+                 
+                   //执行关闭 
+                });
+              });
+            }
+          });
+        },
+        delNotice: function(){
+            var checkStatus = table.checkStatus('notice-table-page')
+            ,checkData = checkStatus.data; //得到选中的数据
+
+            if(checkData.length === 0){
+              return layer.msg('请选择数据');
+            }
+            var noticeIds = "";
+	  	      for(var i=0;i<checkData.length;i++){
+	  	    	noticeIds += checkData[i].notice_id+",";
+	  	      }
+	  	      if(null != noticeIds && ""!= noticeIds){
+	  	    	noticeIds = noticeIds.substring(0, noticeIds.length-1);
+              layer.confirm('确定删除吗？', function(index) {
+            	   admin.req({
+                       url: 'wkrj/notice/delNotice'
+                       ,type: 'post'
+                       ,data: {ids:noticeIds}
+                       ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	   try {
+                     		  res=eval('('+res+')');
+                 			} catch (e) {}
+                 			if(res.success){
+                				layer.msg("删除成功");
+                				layui.table.reload('notice-table-page'); //重载表格
+                                layer.close(index);
+                			}else {
+                				layer.msg("删除失败");
+							}
+                        
+                       }
+                      }); 
+               
+              });
+	  	      }
+          },istopNotice:function(){
+			   var checkStatus = table.checkStatus('notice-table-page')
+	  	  	      ,data = checkStatus.data;
+	  	  	      if(data.length != 1){
+	  	  	    	  layer.msg("请选择一条信息进行置顶！");
+	  	  	    	  return;
+	  	  	      }
+	  	  	  
+	  	     	var istop = data[0].istop;
+	  	     	if (istop==1) {
+	  	     		istop=2;
+				}else{
+				
+					istop=1;
+				}
+	  	      var noticeId = data[0].notice_id;
+	  	      if(null != noticeId && ""!= noticeId){
+ 
+	  	       layer.confirm('确定置顶或取消吗？', function(index) {
+            	   admin.req({
+                       url: 'wkrj/notice/istopNotice'
+                       ,type: 'post'
+                       ,data: {id:noticeId,istop:istop}
+                       ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	   try {
+                     		  res=eval('('+res+')');
+                 			} catch (e) {}
+                 			if(res.success){
+                				layer.msg("置顶或取消成功")
+                				layui.table.reload('notice-table-page'); //重载表格
+                			}else {
+                				layer.msg("置顶或取消失败！");
+							}
+                        
+                       }
+                      }); 
+               
+              });
+   
+	  	  	    
+	        }
+			
+			
+		}
+  };
+  
+  $('.layui-btn.layuiadmin-btn-useradmin').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+});
+</script>
+<script type="text/html" id="istop">
+    {{#  if(d.istop==1){ }}
+		<span style="color:red">是</span>
+	{{#  } else { }}
+		否
+	{{#  } }}
+</script>

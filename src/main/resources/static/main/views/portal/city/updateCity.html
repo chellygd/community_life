@@ -1,0 +1,56 @@
+<div class="layui-form" lay-filter="layuiadmin-form-editCity" style="padding: 20px 0 0 0;">
+	<script type="text/html" template>
+		<input type="text" name="dept_name" value="{{ d.params.dept_name || '' }}" class="layui-input" style="display: none;">
+	</script>
+	<script type="text/html" template>
+		<input type="text" name="dept_id" value="{{ d.params.dept_id || '' }}" class="layui-input" style="display: none;">
+	</script>
+	<script type="text/html" template>
+   		<input type="text" name="dept_parent_id" value="{{ d.params.dept_parent_id || '' }}" class="layui-input" style="display: none;">
+	</script>
+	<script type="text/html" template>
+   		<input type="text" name="dept_type" value="{{ d.params.dept_type || '' }}" class="layui-input" style="display: none;">
+	</script>
+	<div class="layui-form-item">
+		<label class="layui-form-label">名称</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" name="repeat_name" value="{{ d.params.dept_name || '' }}" lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">显示顺序</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="number" name="dept_order" value="{{ d.params.dept_order || '' }}" lay-verify="required" placeholder="显示顺序" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label">备注信息</label>
+		<div class="layui-input-inline">
+			<script type="text/html" template>
+				<input type="text" name="dept_other" value="{{ d.params.dept_other || '' }}" placeholder="备注信息" autocomplete="off" class="layui-input">
+			</script>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label"></label>
+		<div class="layui-input-inline">
+			<input type="button" lay-submit lay-filter="LAY-City-submit" value="确认" class="layui-btn">
+			<input type="button" value="取消" class="layui-btn" onclick="close_data()">
+		</div>
+	</div>
+</div>
+<script>
+layui.use(['admin', 'form', 'upload'], function(){
+  var $ = layui.$
+  ,form = layui.form
+  ,upload = layui.upload;
+})
+function close_data(){
+  parent.layer.closeAll();
+}
+</script>
+

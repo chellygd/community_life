@@ -1,0 +1,164 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<title th:text="${data.tableNameHump}"></title>
+<div class="layui-fluid">
+    <div class="layui-card layui-card-body">
+        <div class="layui-form-item">
+            <button class="layui-btn layuiadmin-btn-list" id="addBtn" th:attr="ekper=${'wkrj/'+data.tableNameHump+'/add'}">新增</button>
+            <button class="layui-btn layuiadmin-btn-list" id="updateBtn" th:attr="ekper=${'wkrj/'+data.tableNameHump+'/update'}">修改</button>
+            <button class="layui-btn layuiadmin-btn-list" id="deleteBtn" th:attr="ekper=${'wkrj/'+data.tableNameHump+'/delete'}">删除</button>
+            <button class="layui-btn layuiadmin-btn-list" id="allshowBtn">显示全部</button>
+        </div>
+        <table th:id="${'LAY_'+data.tableNameHump+'_list'}" th:attr="lay-filter=${'LAY_'+data.tableNameHump+'_list'}"></table>
+    </div>
+</div>
+<script th:inline="javascript">
+    layui.use(['admin', 'table', 'form', 'view'], function () {
+        var view = layui.view
+            , table = layui.table
+            , form = layui.form
+            , admin = layui.admin;
+
+        table.render({
+            elem: '#LAY_[(${data.tableNameHump})]_list'
+            , id: 'LAY_[(${data.tableNameHump})]_list'
+            , url: 'wkrj/[(${data.tableNameHump})]/getAllData'
+            , cols: [
+                [
+                    {type: 'checkbox'}
+                    [# th:each="rower:${data.columnList}"]
+                    ,{field: [[${rower.columnNameHump}]], title:[[${rower.columnNameHump}]]}
+                    [/]
+                ]
+            ]
+            , page: true
+            , limit: 15
+            , limits: [15, 30, 45, 60, 75]
+            , done: function (res, curr, count) {
+                var response = layui.setter.response;
+                //登录状态失效，清除本地 access_token，并强制跳转到登入页
+                if (res[response.statusName] == response.statusCode.logout) {
+                    view.exit();
+                }
+            }
+            , where: { //通过 request 头传递
+                access_token: layui.data('layuiAdmin').access_token
+            }
+            , height: 'full-160'
+        })
+        ;
+
+        $('#addBtn').on('click', function () {
+            admin.popup({
+                title: '添加'
+                , area: ['550px', '600px']
+                , id: 'LAY_[(${data.tableNameHump})]_add'
+                , success: function (layero, index) {
+                    view(this.id).render('wkrj/[(${data.tableNameHump})]/add').done(function () {
+                        form.render(null, '[(${data.tableNameHump})]_addForm');
+                        //监听提交
+                        form.on('submit([(${data.tableNameHump})]_addSubmit)', function (data) {
+                            var field = data.field; //获取提交的字段
+                            //角色
+                            admin.req({
+                                url: 'wkrj/[(${data.tableNameHump})]/add',
+                                data: field,
+                                type: 'post',
+                                success: function (data) {
+                                    if (data.success) {
+                                        layer.msg("保存成功！");
+                                        table.reload('LAY_[(${data.tableNameHump})]_list');
+                                        layer.close(index); //执行关闭
+                                    } else {
+                                        layer.msg(data.msg);
+                                    }
+                                }
+                            });
+
+                        });
+                    });
+                }
+            });
+        });
+        $('#updateBtn').on('click', function () {
+            var checkStatus = table.checkStatus('LAY_[(${data.tableNameHump})]_list');
+            var data = checkStatus.data;
+            if (data.length == 1) {
+            } else {
+                layer.msg("请选中一条数据进行修改！");
+                return;
+            }
+            admin.popup({
+                title: '修改'
+                , area: ['550px', '600px']
+                , id: 'LAY_[(${data.tableNameHump})]_update'
+                , success: function (layero, index) {
+                    view(this.id).render('wkrj/[(${data.tableNameHump})]/update', data[0]).done(function () {
+                        form.render(null, '[(${data.tableNameHump})]_updateForm');
+                        //监听提交
+                        form.on('submit([(${data.tableNameHump})]_updateSubmit)', function (data) {
+                            var field = data.field; //获取提交的字段
+                            admin.req({
+                                url: 'wkrj/[(${data.tableNameHump})]/update',
+                                data: field,
+                                type: 'post',
+                                success: function (data) {
+                                    if (data.success) {
+                                        layer.msg("保存成功！");
+                                        table.reload('LAY_[(${data.tableNameHump})]_list');
+                                        layer.close(index); //执行关闭
+                                    } else {
+                                        layer.msg(data.msg);
+                                    }
+                                }
+                            });
+
+                        });
+                    });
+                }
+            });
+        });
+        $('#deleteBtn').on('click', function () {
+            var checkStatus = table.checkStatus('LAY_[(${data.tableNameHump})]_list');
+            var data = checkStatus.data;
+            if (data.length < 1) {
+                layer.msg("请选中数据进行删除！");
+                return;
+            }
+            var ids = new Array();
+            for (var i = 0; i < data.length; i++) {
+                ids.push(data[i].[(${data.primaryKeyNameHump!=null?data.primaryKeyNameHump:'id'})]);
+            }
+            console.dir(ids.join(","));
+            layer.confirm('你确定要删除吗？', function (index) {
+                admin.req({
+                    url: 'wkrj/[(${data.tableNameHump})]/delete',
+                    type: 'post',
+                    data: {ids: ids.join(",")},
+                    success: function (result) {
+                        if (result.success) {
+                            layer.msg(result.msg);
+                            table.reload('LAY_[(${data.tableNameHump})]_list');
+                            layer.close(index); //执行关闭
+                        } else {
+                            layer.msg(result.msg);
+                            layer.close(index); //执行关闭
+                        }
+                    }
+                });
+            });
+        });
+        $('#allshowBtn').on('click', function () {
+            //执行重载
+            table.reload('LAY_[(${data.tableNameHump})]_list', {
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+                , where: {
+                    deptId: ""
+                }
+            });
+        });
+    });
+</script>
+<script src="./main/views/public/btn_authority.js"></script>
+</html>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wkrj.core.systemnew.module.dao.WkrjModuleNewDao">
+
+	<select id="getGridInfoChildCount" resultType="int" parameterType="java.lang.String">
+		
+		SELECT count(module_id)  
+		FROM `wkrj_sys_module` 
+		where module_parent_id = #{parentId} order by module_order
+	
+	</select>
+	<select id="getGridInfo" resultType="com.wkrj.core.systemnew.module.bean.WkrjModuleNew" parameterType="java.lang.String">
+		
+		SELECT module_id,module_name,module_is_display,module_level,module_url,module_parent_id,module_order,module_icon,module_other,module_icon_new
+		FROM `wkrj_sys_module` 
+		where module_parent_id = #{parentId}
+		<if test="null!=module_id and ''!=module_id">
+		and module_id !=#{module_id}
+		</if>
+		order by module_order
+	
+	</select>
+	<insert id="addModule" parameterType="com.wkrj.core.systemnew.module.bean.WkrjModuleNew" >
+		
+		insert wkrj_sys_module(module_id,module_name,module_level,module_url,module_parent_id,module_order,module_icon,module_is_display,module_other,module_icon_new)
+		values(#{moduleId},#{moduleName},#{moduleLevel},#{moduleUrl},#{moduleParentId},
+			   #{moduleOrder},#{moduleIcon},#{moduleIsDisplay},#{moduleOther},#{moduleIconNew});
+	
+	</insert>
+	<update id="updateModule" parameterType="com.wkrj.core.systemnew.module.bean.WkrjModuleNew">
+		
+		update wkrj_sys_module
+		set
+			module_name=#{moduleName},module_level=#{moduleLevel},module_url=#{moduleUrl},
+			module_parent_id=#{moduleParentId},module_order=#{moduleOrder},module_icon=#{moduleIcon},
+			module_is_display=#{moduleIsDisplay},module_other=#{moduleOther},module_icon_new=#{moduleIconNew}
+		where module_id=#{moduleId}
+		
+	</update>
+	<delete id="delModule">
+		
+		delete from wkrj_sys_module where module_id=#{id}
+		
+	</delete>
+	<select id="getWkrjModuleById" resultType="java.util.Map" >
+		
+		SELECT module_id,module_name,module_is_display,module_level,module_url,module_parent_id,module_order,module_icon,module_other,module_icon_new 
+		FROM `wkrj_sys_module` 
+		where module_id = #{module_id}
+	
+	</select>
+	<select id="getDisplayGridInfo" resultType="com.wkrj.core.systemnew.module.bean.WkrjModuleNew" parameterType="java.lang.String">
+		
+		SELECT module_id,module_name,module_is_display,module_level,module_url,module_parent_id,module_order,module_icon,module_other,module_icon_new 
+		FROM `wkrj_sys_module` 
+		where module_parent_id = #{parentId} and module_is_display=0 order by module_order
+	
+	</select>
+	<select id="getDisplayGridInfoChildCount" resultType="int" parameterType="java.lang.String">
+		
+		SELECT count(module_id)  
+		FROM `wkrj_sys_module` 
+		where module_parent_id = #{parentId} and module_is_display=0 order by module_order
+	
+	</select>
+	<select id="getIcon" resultType="java.util.Map" parameterType="java.lang.Object">
+		
+		select *,icon_class as value,icon_class as name,icon_class as icon from wkrj_sys_icon
+	
+	</select>
+</mapper>
+

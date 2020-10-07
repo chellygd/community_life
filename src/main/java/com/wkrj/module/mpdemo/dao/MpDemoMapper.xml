@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 测试 -->
+<mapper namespace="com.wkrj.module.mpdemo.dao.MpDemoDao">
+
+
+    <select id="listInfoOther" resultType="java.util.Map">
+
+        SELECT a.user_name,b.user_realname
+        FROM `z_wkrj_operate_log`  a
+        LEFT JOIN wkrj_sys_user b
+        on a.user_name=b.user_name
+
+    </select>
+</mapper>

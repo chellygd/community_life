@@ -1,0 +1,56 @@
+<link rel="stylesheet" href="./main/views/component/tree/eleTree.css" media="all">
+  <title>用户管理</title>
+  <div class="layui-fluid">
+    <div class="layui-card layui-col-md3">
+      <div class="layui-card-body">
+      	<div class="eleTree ele1" lay-filter="data1"></div>
+      </div>
+    </div>
+    <div class="layui-card layui-col-md9">
+      <div class="layui-card-body">
+        <div style="padding-bottom: 10px;">
+          <button class="layui-btn layuiadmin-btn-list" data-type="user_add" ekper="wkrjsystemnew/wkrjUser/addUser">新增</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="user_update" ekper="wkrjsystemnew/wkrjUser/updateUser">修改</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="user_del" ekper="wkrjsystemnew/wkrjUser/delUser">删除</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="user_disable" ekper="wkrjsystemnew/wkrjUser/forbiddenUser">禁用</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="user_enable" ekper="wkrjsystemnew/wkrjUser/forbiddenUser">启用</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="user_repassword" ekper="wkrjsystemnew/wkrjUser/repeatPw">重置密码</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="user_allshow" ekper="">显示全部</button>
+        </div>
+        <table id="LAY-user-list" lay-filter="LAY-user-list"></table> 
+      </div>
+    </div>
+  </div>
+<script type="text/html" id="indexTpl">
+    {{d.LAY_TABLE_INDEX+1}}
+</script>
+<script type="text/html" id="user_is_enable">
+	{{#  if(d.userIsEnable ==0){ }}
+	  	否
+	{{#  } else { }}
+	 	<span style="color:red">是</span>
+	{{#  } }}
+</script>
+<script type="text/html" id="role">
+{{#  for(var i=0;i<d.userRole.length;i++){}}
+	{{#  if(d.userRole[i].roleName !=null){ }}
+		{{ d.userRole[i].roleName}}
+		{{# if(d.userRole[i].roleIsdel==='1'){ }}
+		<span style="color:red">（已删除）</span>
+		{{# } }}
+	{{#  } }} 
+  	
+	{{#  if(i<d.userRole.length-1){ }}
+ 	;
+	{{#  } }} 
+{{#  } }} 
+</script>
+<script type="text/html" id="dept_name">
+	{{#  if(d.deptIsdel==='1'){ }}
+		{{d.deptName}}<span style="color:red">（已删除）</span>
+	{{#  }else{ }} 
+  		{{d.deptName}}
+	{{#  } }} 
+</script>
+<script src="./main/views/wkrj/user/js/user.js"></script>
+<script src="./main/views/public/btn_authority.js"></script>

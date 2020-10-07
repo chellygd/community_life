@@ -1,0 +1,210 @@
+<title>市级管理</title>
+  
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a><cite>创客空间门户管理</cite></a>
+    <a><cite>组织机构管理</cite></a>
+    <a><cite>县级管理</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">   
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-useradmin-formlist">
+      <div class="layui-form-item">
+        
+        <div class="layui-inline">
+          <label class="layui-form-label">市级单位</label>
+          <div class="layui-input-block">
+            <select name="role" id="parent">
+              <!-- <option value="0">管理员</option>
+              <option value="1">超级管理员</option>
+              <option value="2">纠错员</option>
+              <option value="3">采购员</option>
+              <option value="4">推销员</option>
+              <option value="5">运营人员</option>
+              <option value="6">编辑</option> -->
+            </select>
+          </div>
+        </div>
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-admin" lay-submit lay-filter="LAY-search-dept">
+            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-admin" data-type="saveCounty">添加</button>
+        <button class="layui-btn layuiadmin-btn-admin" data-type="batchdel">修改</button>
+      </div>
+      <table id="city-countyManage-table" lay-filter="city-countyManage-table"></table>  
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'useradmin', 'table'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,view = layui.view
+  ,table = layui.table
+  ,form = layui.form;
+  
+  form.render(null, 'layadmin-useradmin-formlist');
+  
+	$(function(){
+		getParentDept();
+	});
+	
+	function getParentDept(){
+		var html = "<option value='' selected=''>请选择</option>";
+		admin.req({
+            url: 'wkrj/countyManage/listCity'
+            ,type: 'get'
+            ,dataType: 'json'
+            ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+            	if(isObjNotEmpty(res.data)){
+    				$.each(res.data,function(j,v){
+    					html += "<option value='"+v.id+"'>"+v.name+"</option>";
+    				});
+    			}
+    			$("#parent").html(html);
+    			form.render(null, 'layadmin-useradmin-formlist');
+            }
+        });
+	}
+  
+	
+  
+	//  监听搜索
+	form.on('submit(LAY-search-dept)', function(data){
+		var id = data.field.role;
+		//执行重载
+		table.reload('city-countyManage-table', {
+			where:{
+				dept_parent_id:id
+			}
+		});
+	});
+  
+	table.render({
+		 elem: '#city-countyManage-table'
+		,url:'wkrj/countyManage/listAllCounty'
+		,cols: [[
+	         {type:'checkbox'}
+			,{field:'dept_name', title: '名称'}
+			,{field:'dept_type', title: '部门类型'}
+			,{field:'dept_order', title: '显示顺序'}
+			,{field:'dept_other', title: '备注信息'}
+			]]
+		,page: true
+		,done: function(res, curr, count){
+	  		var response = layui.setter.response;
+	  		//登录状态失效，清除本地 access_token，并强制跳转到登入页
+	  		if(res[response.statusName] == response.statusCode.logout){
+	  			view.exit();
+	  		}
+	  	}
+	  	,where: { //通过 request 头传递
+	  		access_token: layui.data('layuiAdmin').access_token
+	  	}
+	});
+
+  //事件
+  var active = {
+    batchdel: function(){
+      var checkStatus = table.checkStatus('city-countyManage-table')
+      data = checkStatus.data; //得到选中的数据
+      if(data.length != 1){
+        return layer.msg('请选择一条数据');
+      }
+      admin.popup({
+        title: '修改县级信息'
+        ,area: ['500px', '450px']
+        ,id: 'LAY-popup-city-edit'
+        ,success: function(layero, index){
+          	view(this.id).render('portal/county/updateCounty',data[0]).done(function(){
+            form.render(null, 'layuiadmin-form-editCounty');
+            
+            //监听提交
+            form.on('submit(LAY-County-submit)', function(data){
+              var field = data.field; //获取提交的字段
+              console.dir(field);
+              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              admin.req({
+                  url: 'wkrj/countyManage/updateCounty'
+                  ,type: 'get'
+                  ,data: field
+                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+         			if(res.success){
+         				layer.msg("修改成功");
+         			}else{
+         				layer.msg(res.msg);
+         			}
+       				layer.close(index); //执行关闭 
+       	            layui.table.reload('city-countyManage-table'); //重载表格
+                  }
+              });
+            });
+          });
+        }
+      });
+    }
+	  ,saveCounty: function(){
+	      admin.popup({
+	        title: '添加县级信息'
+	        ,area: ['500px', '450px']
+	        ,id: 'LAY-popup-city-add'
+	        ,success: function(layero, index){
+	          view(this.id).render('portal/county/saveCounty').done(function(){
+	        
+	            form.render(null, 'layuiadmin-form-saveCounty');
+	            
+	            //监听提交
+	            form.on('submit(LAY-County-submit)', function(data){
+	              var field = data.field; //获取提交的字段
+	              console.dir(field);
+	              //提交 Ajax 成功后，关闭当前弹层并重载表格
+	              admin.req({
+	                  url: 'wkrj/countyManage/saveCounty'
+	                  ,type: 'post'
+	                  ,data: field
+	                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+            			if(res.success){
+            				layer.msg("添加成功");
+            			}else{
+            				layer.msg(res.msg);
+            			}
+            			layer.close(index); //执行关闭 
+           	            layui.table.reload('city-countyManage-table'); //重载表格
+	                  }
+	              });
+				  layer.close(index); //执行关闭 
+				  layui.table.reload('city-countyManage-table'); //重载表格
+	            });
+	          });
+	        }
+	      });
+	    }
+	  }  
+  $('.layui-btn.layuiadmin-btn-admin').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+  
+  //判断变量（字符串）是否为空或null
+  function isObjEmpty(obj){
+  	if(obj==null||obj==undefined||obj==""||obj=="null"||obj=="undefinet"){
+  		return true;
+  	}else{
+  		return false;
+  	}
+  }
+  function isObjNotEmpty(obj){
+  	return !isObjEmpty(obj);
+  }
+});
+</script>

@@ -1,0 +1,282 @@
+<title>资料库管理</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">创客空间门户管理</a>
+    <a><cite>资料库管理</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-resourcefront-formlist">
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">资源名称</label>
+          <div class="layui-input-block">
+            <input type="text" name="resource_name" placeholder="请输入（可模糊查询）" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-resource-front-search">
+            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="addResource">发布</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="updateResource">修改</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="delResource">删除</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="istopResource">置顶/取消置顶</button>
+      </div>
+      
+      <table id="resource-table-page" lay-filter="resource-table-page"></table>
+    
+
+    </div>
+  </div>
+</div>
+ <style>
+.laytable-cell-1-title_pic{
+		width:60px;
+		height:60px;
+}
+</style> 
+  <script type="text/html" id="imgTpl"> 
+        <img style="display: inline-block; width: 100%; height: 100%;" src= {{ d.resource_pic }}>
+      </script> 
+
+<script>
+//var ue = UE.getEditor('editor');
+layui.use(['admin', 'useradmin', 'table'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,view = layui.view
+  ,table = layui.table
+  ,form = layui.form;
+  
+  form.render(null, 'layadmin-resourcefront-formlist');
+  
+  //table
+  table.render({
+	elem: '#resource-table-page'
+	,url: 'wkrj/resource/resourceList'
+	,cols: [[
+		{type:'checkbox', fixed: 'left'}
+		,{field:'resource_pic', title: '标题图片',width:'10%',fixed: 'left', templet:'#imgTpl'}
+		,{field:'resource_name',width:'42%',title: '资源名称'}	 
+		,{field:'input_time',width:'15%',title: '发布时间'}  	        
+		,{field:'istop',width:'15%',title: '是否置顶',templet: '#istop'} 
+		,{field:'sort',width:'15%',title: '排序'}  	      
+	]]
+	,page: true
+	,done: function(res, curr, count){
+		var response = layui.setter.response;
+		//登录状态失效，清除本地 access_token，并强制跳转到登入页
+		if(res[response.statusName] == response.statusCode.logout){
+			view.exit();
+		}
+	}
+	,where: { //通过 request 头传递
+		access_token: layui.data('layuiAdmin').access_token
+	}
+  });
+  
+  
+  //监听搜索
+  form.on('submit(LAY-resource-front-search)', function(data){
+	  var field = data.field;
+    //执行重载
+    table.reload('resource-table-page', {
+      where: field
+    });
+  });
+
+  //事件
+  var active = {
+   addResource: function(){
+      admin.popup({
+        title: '发布资料'
+        ,area: ['700px', '500px']
+        ,id: 'LAY-popup-resource-add'
+        ,success: function(layero, index){
+          view(this.id).render('portal/resource/resourceform').done(function(){
+            form.render(null, 'layuiadmin-form-resourceadmin');
+            //监听提交
+            form.on('submit(LAY-resource-front-submit)', function(data){
+              var field = data.field; //获取提交的字段
+              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              //$.ajax({});
+               admin.req({
+                  url: 'wkrj/resource/addResource'
+                  ,type: 'post'
+                  ,data: field
+                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+						 try {
+                		  res=eval('('+res+')');
+            			} catch (e) {}
+            			if(res.success){
+            				layer.msg("发布成功");
+            	              layer.close(index); //执行关闭 
+            				layui.table.reload('resource-table-page'); //重载表格
+            			}else {
+            				layer.msg("发布失败");
+						}
+                  }
+                 }); 
+             
+            });
+          });
+        }
+      });
+    },
+    updateResource:function(){
+    	var checkStatus = table.checkStatus('resource-table-page'),
+	  	    data = checkStatus.data;
+	  	    if(data.length != 1){
+	  	    	layer.msg("请选择一条信息进行编辑！");
+	  	    	return;
+	  	    }
+        admin.popup({
+            title: '编辑资料'
+            ,area: ['700px', '500px']
+            ,id: 'LAY-popup-resource-update'
+            ,success: function(layero, index){
+        		
+              view(this.id).render('portal/resource/resourceform',data[0]).done(function(){
+            	  
+            	  
+            	  $("#btImg_div").html("<img src=\""+data[0].resource_pic+"\" style=\"width:200px;height:150px;\">");
+                form.render(null, 'layuiadmin-form-resourceadmin');
+                
+                //监听提交
+                form.on('submit(LAY-resource-front-submit)', function(data){
+                  var field = data.field; //获取提交的字段
+                  //提交 Ajax 成功后，关闭当前弹层并重载表格
+                  //$.ajax({});
+                   admin.req({
+                      url: 'wkrj/resource/updateResource'
+                      ,type: 'post'
+                      ,data: field
+                      ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	  try {
+                    		  res=eval('('+res+')');
+                			} catch (e) {}
+                			if(res.success){
+                				layer.msg("编辑成功");
+                				layui.table.reload('resource-table-page'); //重载表格
+                                layer.close(index);
+                			}else {
+                				layer.msg("编辑失败");
+							}
+                       
+                      }
+                     }); 
+                 
+                   //执行关闭 
+                });
+              });
+            }
+          });
+        },
+        delResource: function(){
+            var checkStatus = table.checkStatus('resource-table-page')
+            ,checkData = checkStatus.data; //得到选中的数据
+
+            if(checkData.length === 0){
+              return layer.msg('请选择数据');
+            }
+            var resourceIds = "";
+            var resourcePics = "";
+	  	      for(var i=0;i<checkData.length;i++){
+	  	    	resourceIds += checkData[i].resource_id+",";
+	  	    	resourcePics += checkData[i].resource_pic+",";
+	  	      }
+	  	      if(null != resourceIds && ""!= resourceIds){
+	  	    	resourceIds = resourceIds.substring(0, resourceIds.length-1);
+	  	    	resourcePics = resourcePics.substring(0, resourcePics.length-1);
+              layer.confirm('确定删除吗？', function(index) {
+            	   admin.req({
+                       url: 'wkrj/resource/delResource'
+                       ,type: 'post'
+                       ,data: {ids:resourceIds,resourcePics:resourcePics}
+                       ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	   try {
+                     		  res=eval('('+res+')');
+                 			} catch (e) {}
+                 			if(res.success){
+                				layer.msg("删除成功");
+                				layui.table.reload('resource-table-page'); //重载表格
+                                layer.close(index);
+                			}else {
+                				layer.msg("删除失败");
+							}
+                        
+                       }
+                      }); 
+               
+              });
+	  	      }
+          },istopResource:function(){
+			   var checkStatus = table.checkStatus('resource-table-page')
+	  	  	      ,data = checkStatus.data;
+	  	  	      if(data.length != 1){
+	  	  	    	  layer.msg("请选择一条信息进行置顶！");
+	  	  	    	  return;
+	  	  	      }
+	  	  	  
+	  	     	var istop = data[0].istop;
+	  	     	if (istop==1) {
+	  	     		istop=2;
+				}else{
+				
+					istop=1;
+				}
+	  	      var resourceId = data[0].resource_id;
+	  	      if(null != resourceId && ""!= resourceId){
+ 
+	  	       layer.confirm('确定置顶或取消吗？', function(index) {
+            	   admin.req({
+                       url: 'wkrj/resource/istopResource'
+                       ,type: 'post'
+                       ,data: {id:resourceId,istop:istop}
+                       ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	   try {
+                     		  res=eval('('+res+')');
+                 			} catch (e) {}
+                 			if(res.success){
+                				layer.msg("置顶或取消成功")
+                				layui.table.reload('resource-table-page'); //重载表格
+                			}else {
+                				layer.msg("置顶或取消失败！");
+							}
+                        
+                       }
+                      }); 
+               
+              });
+   
+	  	  	    
+	        }
+			
+			
+		}
+  };
+  
+  $('.layui-btn.layuiadmin-btn-useradmin').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+});
+</script>
+<script type="text/html" id="istop">
+    {{#  if(d.istop==1){ }}
+		<span style="color:red">是</span>
+	{{#  } else { }}
+		否
+	{{#  } }}
+</script>

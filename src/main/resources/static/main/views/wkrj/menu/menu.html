@@ -1,0 +1,144 @@
+<style type="text/css">
+	.layui-edge-new{
+		position: absolute;
+	    left: 10px;
+	    top: 50%;
+	    margin-top: -8px;
+	    cursor: pointer;
+	    border-width: 6px;
+	    border-top-color: #c2c2c2;
+	    border-top-style: solid;
+	    border:0;
+	    -webkit-transition: all .3s;
+	}
+</style>
+<!-- 下拉树插件 -->
+  <script src="./main/views/component/select_tree/formSelects-v4.js"></script>
+  <link rel="stylesheet" href="./main/views/component/select_tree/formSelects-v4.css">
+  <title>菜单管理</title>
+  
+  <div class="layui-fluid" style="display:flex;height: 95%;">
+  <!--左侧树  -->
+  	<div class="" style="width:30%;height:100%;">
+	    <div class="" action="" >
+		    <ul id="leftTree"  style="overflow: auto;"></ul>			
+		</div>
+	</div>
+	<!--中间  -->
+	<div class="" style="width:40%" id="center_menu">
+				<form class="layui-form" action="" >
+				<div style="border: medium double black;padding-left:10px;padding-top: 10px">
+				<span class="nj">输入区域</span>
+				
+				<div class="layui-form-item mt">
+			        <span class="nj">上级菜单</span>
+			        <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">			    
+				        <select name="menu[0].menuParentId" xm-select="example6_5" xm-select-radio>
+	    				</select>
+    				</div>
+			    </div>
+			          <div class="layui-form-item mt">
+			            <span class="nj">菜单名称</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">			    
+			             <input type="text" name="menu[0].menuName" id="menu_name" lay-verify="required"  autocomplete="off" placeholder="自定义" class="layui-input" >
+			             <input type="hidden" name="menu[0].menuId" id="menu_id" autocomplete="off" placeholder="自定义" class="layui-input" >
+			             <input type="hidden" name="moduleId" id="module_id" autocomplete="off" placeholder="自定义" class="layui-input" >
+			            </div>
+			          </div>         
+			         
+			          <div class="layui-form-item mt">
+			            <span class="nj">菜单顺序</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			             <input type="number" min="0"  name="menu[0].menuOrder" id="menu_order" lay-verify="required"  autocomplete="off" placeholder="自定义" class="layui-input" >
+			            </div>
+			          </div>
+			          <div class="layui-form-item mt">
+			            <span class="nj">是否隐藏</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			             	<input type="radio" name="menu[0].menuIsDisplay"   value="0" title="显示" >
+							<input type="radio" name="menu[0].menuIsDisplay"  value="1" title="隐藏" >
+			            </div>
+			          </div>
+			          <div class="layui-form-item mt">
+			            <span class="nj">菜单备注</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			             <input type="text" value="0" name="menu[0].menuOther" id="menu_other" autocomplete="off" placeholder="自定义" class="layui-input" >
+			            </div>
+			          </div>
+			          <div class="layui-form-item mt">
+			            <span class="nj">菜单图标</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			            	<select name="menu[0].menuIconNew" id="menu_icon_new">
+        					</select>
+			            </div>
+			          </div>
+			          <div class="layui-form-item mt" style="display:none;">
+			          	<label class="layui-form-label">菜单图标（不用）</label>
+					      <button type="button" class="layui-btn" id="module_img">
+					          <i class="layui-icon">&#xe67c;</i>上传图标
+					      </button>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			              <input type="hidden" name="menu[0].menuIcon" id="menu_icon">
+			              <div id="uploadfile" style="margin-left:20px;width:50px;height:50px;border:1px solid #e9e9e9;background:#fff">
+			              </div>
+			            </div>
+			          </div>
+			          </div>
+<br/>
+			<div style="border: medium double black;padding-left:10px;padding-top: 10px;padding-bottom: 10px;">
+			<span class="nj" >显示区域</span>
+						<div class="layui-form-item mt">
+			            <span class="nj">模块名称</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			              <input readonly="readonly" type="text" name="moduleName" id="module_name" autocomplete="off" placeholder="自定义" class="layui-input" >
+			            </div>
+			          </div>
+			          <div class="layui-form-item mt">
+			            <span class="nj">模块顺序</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			              <input readonly="readonly" type="text" name="moduleOrder" id="module_order" autocomplete="off" placeholder="自定义" class="layui-input" >
+			            </div>
+			          </div>
+			          <div class="layui-form-item mt">
+			            <span class="nj">模块视图</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			              <input readonly="readonly" type="text" name="moduleView" id="module_view" autocomplete="off" placeholder="自定义" class="layui-input" >
+			            </div>
+			          </div>
+			          <div class="layui-form-item mt">
+			            <span class="nj">模块图标</span>
+			            <div class="layui-input-block" style="display: inline-block;margin-left: 0;width: 70%">
+			            	<select name="moduleIconNew" id="module_icon_new" readonly="readonly">
+        					</select>
+			            </div>
+			          </div>
+			          <div class="layui-form-item mt" style="display:none;">
+			            <span class="nj" >模块图标（不用）</span>
+			            <input readonly="readonly" type="hidden" name="moduleIcon" id="module_icon">
+			            <div id="uploadfile1" style="margin-left:20px;width:50px;height:50px;border:1px solid #e9e9e9;background:#fff">
+			              </div>			            
+			          </div>
+			         <div class="div_an tc" style="margin-left: 27%;">
+			              <button class="layui-btn btn" lay-submit lay-filter="add_class_save" ekper="wkrjsystemnew/wkrjMenu/addMenu">添加</button>
+			              <button class="layui-btn btn" lay-submit lay-filter="update_class_save" ekper="wkrjsystemnew/wkrjMenu/updateMenu">修改</button>
+			              <a id="deleteModule" class="layui-btn" href="javascript:;" ekper="wkrjsystemnew/wkrjMenu/delMenu">删除</a>
+			         </div>
+			         </div>
+			     </form>		          
+				 
+    		</div>
+  <!--右侧树  -->
+	<div class="" style="width:30%;height:100%;">
+  		<div class="layui-form" action="">
+	    	<ul id="rightTree" style="overflow: auto;"></ul>			
+		</div>     				
+	</div>
+  </div>
+<script type="text/javascript">
+	var o = document.getElementById("center_menu");
+	var h = o.clientHeight||o.offsetHeight;
+	document.getElementById("leftTree").style.height=h+"px"; 
+	document.getElementById("rightTree").style.height=h+"px"; 
+</script>
+<script src="./main/views/wkrj/menu/js/menu.js"></script>
+<script src="./main/views/public/btn_authority.js"></script>

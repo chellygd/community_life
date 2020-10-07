@@ -1,0 +1,47 @@
+  <script src="plug-in/layui/layui-xtree/layui-xtree.js"></script>
+  <title>角色管理</title>
+  <div class="layui-fluid">
+    <div class="layui-card layui-col-md8">
+      <div class="layui-card-body" id="box1">
+      	<div style="padding-bottom: 10px;">
+          <button class="layui-btn layuiadmin-btn-list" data-type="role_add" ekper="wkrjsystemnew/wkrjRole/addRole">添加</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="role_update" ekper="wkrjsystemnew/wkrjRole/updateRole">修改</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="role_del" ekper="wkrjsystemnew/wkrjRole/delRole">删除</button>
+          <button class="layui-btn layuiadmin-btn-list" data-type="role_copy" ekper="wkrjsystemnew/wkrjRole/copyRole">复制角色</button>
+        </div>
+        <table id="LAY-role-list" lay-filter="LAY-role-list"></table> 
+      </div>
+    </div>
+    <div class="layui-card layui-col-md4">
+      <div class="layui-card-body">
+      	<div style="padding-bottom: 10px;">
+          <button class="layui-btn layuiadmin-btn-list" data-type="per_save" ekper="wkrjsystemnew/wkrjRole/setMenuPermission">保存授权</button>
+        </div>
+        <div class="layui-form">
+            <!-- <div id="LAY-auth-tree-index"></div> -->
+            <div id="xtree1" style="    height: 90%;overflow:auto;" ></div>
+	    </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/html" id="barDemo">
+  	<a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="warrant">授权</a>
+  </script>
+  <script type="text/html" id="rolerType">
+		{{#  if(d.role_type ==2){ }}
+	  	普通角色
+		{{#  } else { }}
+	 	开发角色
+		{{#  } }}
+  </script>
+  <script type="text/html" id="indexTpl1">
+    	{{d.LAY_TABLE_INDEX+1}}
+  </script>
+  <script>
+  	/* var o = document.getElementById("LAY-role-list");
+	var h = o.clientHeight||o.offsetHeight;
+	alert(h);
+	document.getElementById("xtree1").style.height=h+"px"; */
+  </script>
+  <script src="./main/views/wkrj/role/js/role.js"></script>
+  <script src="./main/views/public/btn_authority.js"></script>

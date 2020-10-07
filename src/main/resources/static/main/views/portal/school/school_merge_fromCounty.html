@@ -1,0 +1,68 @@
+<div class="layui-form" lay-filter="layuiadmin-form-mergeSchoolForm" style="padding: 20px 0 0 0;">
+	<script type="text/html" template>
+        <input type="hidden"  name="old_dept_id" value="{{ d.params.dept_id || '' }}">
+    </script>
+  <div class="layui-form-item">
+    <label class="layui-form-label">学校名称</label>
+    <div class="layui-input-inline">
+      <script type="text/html" template>
+        <input type="text" name="dept_name" value="{{ d.params.dept_name || '' }}" readonly="readonly" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">当前所属地</label>
+    <div class="layui-input-inline">
+      <script type="text/html" template>
+         <input type="text" name="areaBelong" value="{{ d.params.areaBelong || '' }}" class="layui-input" readonly="readonly">
+      </script>
+    </div>
+  </div>
+	<div class="layui-form-item">
+    <label class="layui-form-label">合并到(学校)</label>
+    <div class="layui-input-inline">
+      <script type="text/html" template lay-url="wkrj/orgSchools/getOrgByParentId" lay-done="layui.data.getOrgDone_change(d)">
+      	<select lay-verify="required" name="dept_id">
+			<option value=''>请选择学校</option>
+              	{{# for(var i=0;i<d.data.length;i++){ }}
+					<option value="{{d.data[i].dept_id}}">{{d.data[i].dept_name}}</option>
+				{{# } }}
+		</select>      
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label"></label>
+    <div class="layui-input-inline">
+      <input type="button" lay-submit lay-filter="LAY-portal-school-submit-merge" value="合并" class="layui-btn">
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'form', 'upload'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,form = layui.form
+  ,upload = layui.upload;
+  
+  //上传头像
+/*   upload.render({
+    elem: '#layuiadmin-upload-useradmin'
+    ,url: './json/upload/demo.js'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,done: function(res){
+      $(this.item).prev("div").children("input").val(res.data.src)
+    }
+  }); */
+})
+
+layui.data.getOrgDone_change = function(d){
+	layui.use(['form'], function(){
+	    var form = layui.form;
+	     form.render(null, 'layuiadmin-form-mergeSchoolForm'); //渲染该模板下的动态表单
+	  });
+}
+</script>

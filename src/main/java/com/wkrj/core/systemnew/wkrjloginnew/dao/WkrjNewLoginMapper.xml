@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wkrj.core.systemnew.wkrjloginnew.dao.WkrjNewLoginDao">
+
+	<select id="findUserByNameAndPwd" resultType="java.lang.String" parameterType="com.wkrj.core.systemnew.user.bean.WkrjUserNew">
+		
+		SELECT user_id FROM wkrj_sys_user 
+		where user_name=#{userName} and user_password=#{userPassword}
+	
+	</select>
+	<resultMap type="com.wkrj.core.systemnew.user.bean.WkrjUserNew" id="simpleWkrjUser">
+		
+		<id column="user_id" property="userId"/>
+		<result column="station_id" property="stationId"/>
+		<result column="dept_id" property="deptId"/>
+		<result column="user_name" property="userName"/>
+		<result column="user_password" property="userPassword"/>
+		<result column="user_password_old" property="userPasswordOld"/>
+		<result column="user_realname" property="userRealname"/>
+		<result column="user_card" property="userCard"/>
+		<result column="user_is_enable" property="userIsEnable"/>
+		<result column="user_inputtime" property="userInputtime" />
+		<result column="user_last_ip" property="userLastIp" />
+		<result column="user_no" property="userNo" />
+		<result column="user_last_time" property="userLastTime" />
+		<result column="user_tel" property="userTel" />
+		<result column="user_accounttype" property="userAccounttype" />
+		
+	</resultMap>
+	<resultMap type="com.wkrj.core.systemnew.user.bean.WkrjUserNew" id="wkrjUserAndRole" extends="simpleWkrjUser">
+		
+		<collection property="userRole" ofType="com.wkrj.core.systemnew.role.bean.WkrjRoleNew">
+		
+			<id column="role_id" property="roleId"/>
+			<result column="role_name" property="roleName"/>
+			<result column="role_type" property="roleType"/>
+			<result column="role_dept" property="roleDept"/>
+			<result column="role_other" property="roleOther"/>
+			
+		</collection>
+		
+		
+	</resultMap>
+	<select id="getUserInfoById" resultMap="wkrjUserAndRole" parameterType="java.lang.Object">
+	
+		SELECT user_accounttype,user.user_id,userrole.role_id,role.role_name,station_id,dept_id,user_name,user_password,user_password_old,user_realname,user_card,user_is_enable,
+			   DATE_FORMAT(user_inputtime,'%Y-%m-%d %H:%i:%s') user_inputtime,user_last_ip,user_no,
+			   DATE_FORMAT(user_last_time,'%Y-%m-%d %H:%i:%s') user_last_time,user_tel
+		FROM   wkrj_sys_user user left join wkrj_sys_user_role userrole on user.user_id=userrole.user_id
+			   left join wkrj_sys_role role on userrole.role_id=role.role_id
+			   
+		where user.user_id=#{userId}
+		
+	</select>
+	
+</mapper>
+

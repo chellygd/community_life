@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ehcache>
+    <diskStore path="java.io.tmpdir"/>
+    <defaultCache
+            maxElementsOnDisk="10000"
+            maxElementsInMemory="1000"
+            eternal="true"
+            overflowToDisk="true"
+            diskPersistent="true"
+            memoryStoreEvictionPolicy="LFU"
+    />
+
+    <cache name="wkrjCache"
+           maxElementsOnDisk="20000"
+           maxElementsInMemory="2000"
+           eternal="true"
+           overflowToDisk="true"
+           diskPersistent="true"
+           memoryStoreEvictionPolicy="LFU"
+    />
+</ehcache> 

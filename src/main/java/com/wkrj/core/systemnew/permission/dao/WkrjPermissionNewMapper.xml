@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wkrj.core.systemnew.permission.dao.WkrjPermissionNewDao">
+	
+	<select id="getPermissionByModuleId" resultType="com.wkrj.core.systemnew.permission.bean.WkrjPermissionNew" parameterType="java.lang.Object">
+		
+		SELECT perm_id,module_id,perm_name,perm_flag,perm_icon 
+		FROM `wkrj_sys_permission` 
+		where module_id = #{module_id}
+	
+	</select>
+	<delete id="delPermission">
+		
+		<!-- delete from wkrj_sys_permission where perm_id=#{id} -->
+		delete from wkrj_sys_permission where FIND_IN_SET(perm_id,#{id})
+		
+	</delete>
+	<select id="getPermissionList" resultType="com.wkrj.core.systemnew.permission.bean.WkrjPermissionNew" parameterType="java.lang.Object">
+		
+		SELECT perm_id,module_id,perm_name,perm_flag,perm_icon 
+		FROM `wkrj_sys_permission` 
+		where module_id = #{module_id}
+		order by perm_name
+		limit #{offset},#{limit}
+		
+	
+	</select>
+	<select id="getPermissionListCount" resultType="java.lang.Long" parameterType="java.lang.Object">
+		
+		SELECT count(module_id) 
+		FROM `wkrj_sys_permission` 
+		where module_id = #{module_id}
+	
+	</select>
+	<select id="checkIsHavePermission" resultType="java.lang.Boolean" parameterType="java.lang.Object">
+		
+		SELECT count(perm_id) 
+		FROM `wkrj_sys_permission` 
+		where perm_flag = #{perm_flag} and perm_id!= #{perm_id}
+	
+	</select>
+	<insert id="addPermission" parameterType="com.wkrj.core.systemnew.permission.bean.WkrjPermissionNew" >
+		
+		insert wkrj_sys_permission(perm_id,module_id,perm_name,perm_flag,perm_icon)
+		values(#{permId},#{moduleId},#{permName},#{permFlag},#{permIcon});
+	
+	</insert>
+	<update id="updatePermission" parameterType="com.wkrj.core.systemnew.permission.bean.WkrjPermissionNew">
+		
+		update wkrj_sys_permission
+		set <!-- module_id=#{module_id}, -->perm_name=#{permName},perm_flag=#{permFlag},perm_icon=#{permIcon}
+		where perm_id=#{permId}
+		
+	</update>
+	<select id="getPermissionByPermId" resultType="com.wkrj.core.systemnew.permission.bean.WkrjPermissionNew" parameterType="java.lang.Object">
+		
+		SELECT perm_id,module_id,perm_name,perm_flag,perm_icon 
+		FROM `wkrj_sys_permission` 
+		where perm_id = #{module_id}
+	
+	</select>
+</mapper>
+

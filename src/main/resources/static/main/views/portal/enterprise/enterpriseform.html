@@ -1,0 +1,126 @@
+
+
+<div class="layui-form" lay-filter="layuiadmin-form-enterpriseadmin" style="padding: 20px 0 0 0;">
+	 <script type="text/html" template>
+	<input type="hidden" name="enterprise_id" value="{{ d.params.enterprise_id || '' }}">
+	</script>
+	  <div class="layui-form-item">
+    <label class="layui-form-label">企业logo</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="hidden" id="enterprise_logo" name="enterprise_logo" value="{{ d.params.enterprise_logo || '' }}" lay-verify="required"  autocomplete="off" class="layui-input">
+      </script>
+    </div>
+     <button style="float: left;" type="button" class="layui-btn" id="layuiadmin-upload">上传图片</button> 
+    <div id="btImg_div"></div>
+    
+  </div>
+	  <div class="layui-form-item">
+    <label class="layui-form-label">企业背景</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="hidden" id="enterprise_background" name="enterprise_background" value="{{ d.params.enterprise_background || '' }}" lay-verify="required"  autocomplete="off" class="layui-input">
+      </script>
+    </div>
+     <button style="float: left;" type="button" class="layui-btn" id="layuiadmin-upload2">上传图片</button> 
+    <div id="btImg_div2"></div>
+    
+  </div>
+	
+	
+  <div class="layui-form-item">
+    <label class="layui-form-label">企业名称</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="enterprise_name" value="{{ d.params.enterprise_name || '' }}" lay-verify="required" placeholder="请输入" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">项目类型</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="project_type" value="{{ d.params.project_type || '' }}" lay-verify="required" placeholder="请输入" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">项目名称</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="project_name" value="{{ d.params.project_name || '' }}" lay-verify="required" placeholder="请输入" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">项目简介</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <textarea style="width:333px;" type="text" name="project_infor" value="{{ d.params.project_infor || '' }}" lay-verify="required" placeholder="请输入" autocomplete="off" class="layui-textarea"></textarea>
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">排序</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="sort" value="{{ d.params.sort || '' }}" lay-verify="number" placeholder="请输入" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+
+	<div class="layui-form-item">
+    <label class="layui-form-label">发布时间</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="input_time" id="input_time" value="{{ d.params.input_time || '' }}" lay-verify="required"  class="layui-input">
+      </script>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <label class="layui-form-label"></label>
+    <div class="layui-input-block">
+      <input type="button" lay-submit lay-filter="LAY-enterprise-front-submit" value="确认" class="layui-btn">
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'form', 'upload','laydate'], function(){
+  var $ = layui.$
+  ,form = layui.form
+  ,upload = layui.upload
+  ,laydate = layui.laydate;
+  
+  //日期时间选择器
+  laydate.render({ 
+    elem: '#input_time'
+    ,type: 'datetime'
+  });
+  form.render();
+  //上传头像
+  upload.render({
+    elem: '#layuiadmin-upload'
+    ,url: 'wkrj/enterprise/uploadEnterprisePic'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,done: function(res){
+    	 $("#enterprise_logo").val(res.path)
+         $("#btImg_div").html("<img src=\""+res.path+"\" style=\"width:200px;height:150px;\">");
+    }
+  });
+   upload.render({
+    elem: '#layuiadmin-upload2'
+    ,url: 'wkrj/enterprise/uploadEnterprisePic'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,done: function(res){
+    	 $("#enterprise_background").val(res.path)
+         $("#btImg_div2").html("<img src=\""+res.path+"\" style=\"width:200px;height:150px;\">");
+    }
+  }); 
+})
+</script>

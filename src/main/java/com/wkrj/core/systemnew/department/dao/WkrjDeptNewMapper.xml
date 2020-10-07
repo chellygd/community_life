@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wkrj.core.systemnew.department.dao.WkrjDeptNewDao">
+
+	<select id="getDeptTree" resultType="com.wkrj.core.systemnew.department.bean.WkrjDeptNew" parameterType="java.lang.String">
+		
+		SELECT dept_id,dept_order,dept_name,dept_parent_id,dept_is_leaf,dept_other 
+		FROM `wkrj_sys_department` 
+		where dept_parent_id = #{parent_id}
+		and dept_isdel="0"
+	
+	</select>
+	<select id="getDeptChildCount" resultType="int" parameterType="java.lang.String">
+		
+		SELECT count(dept_id) 
+		FROM `wkrj_sys_department` 
+		where dept_parent_id = #{parentId}
+		and dept_isdel="0"
+	
+	</select>
+	<select id="getDeptTree1" resultType="com.wkrj.core.systemnew.department.bean.WkrjDeptNew" parameterType="java.lang.String">
+		SELECT *
+		FROM `wkrj_sys_department` 
+		where true 
+		<choose>  
+	        <when test="true==isGly">  
+	            and dept_parent_id = #{parent_id}
+	        </when>   
+	        <!-- <when test="false==isGly and user_dept!=null and user_dept!=''">  
+	        	and dept_parent_id =#{user_dept}
+	        </when>  
+	        <otherwise>  
+	           
+	        </otherwise>  --> 
+    	</choose>  
+		and dept_isdel="0"
+		order by dept_id asc
+	</select>
+	<select id="getDeptChildMaxByPid" resultType="java.lang.String" parameterType="java.lang.String">
+		
+		SELECT IF(ISNULL(MAX(dept_id)),'000',MAX(dept_id)) dept_id FROM wkrj_sys_department
+		where dept_parent_id = #{parentId}
+	
+	</select>
+	<insert id="addDept" parameterType="com.wkrj.core.systemnew.department.bean.WkrjDeptNew" >
+		
+		insert wkrj_sys_department(dept_id,dept_order,dept_name,
+		dept_parent_id,dept_is_leaf,dept_other,dept_isdel) 
+		values(#{deptId},#{deptOrder},#{deptName},
+		#{deptParentId},#{deptIsLeaf},#{deptOther},"0")
+		
+	</insert>
+	<update id="delDept_new" parameterType="java.lang.Object">
+		
+		update wkrj_sys_department set dept_isdel=#{dept_isdel}
+		where dept_id=#{dept_id}
+		
+	</update>
+	<update id="updateDept" parameterType="com.wkrj.core.systemnew.department.bean.WkrjDeptNew">
+		
+		update wkrj_sys_department set dept_order=#{deptOrder},
+		dept_name=#{deptName},dept_other=#{deptOther}
+		where dept_id=#{deptId}
+		
+	</update>
+	<select id="getDeptTree_new" resultType="com.wkrj.core.systemnew.department.bean.WkrjDeptNew" parameterType="java.lang.String">
+		
+		SELECT dept_id,dept_order,dept_name,dept_parent_id,dept_is_leaf,dept_other 
+		FROM `wkrj_sys_department` 
+		where dept_parent_id = #{parent_id}
+		and dept_isdel="0"
+		<if test="null!=dept_id and ''!=dept_id">
+			and dept_id &lt;&gt; #{dept_id}
+		</if>
+	</select>
+	<select id="getDeptTree_lazy" resultType="java.util.Map" parameterType="java.lang.String">
+		
+		SELECT dept_id,dept_order,dept_name,dept_parent_id,dept_is_leaf,dept_other 
+		FROM `wkrj_sys_department` 
+		where dept_parent_id = #{parent_id}
+		and dept_isdel="0"
+	
+	</select>
+</mapper>
+

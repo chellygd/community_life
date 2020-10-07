@@ -1,0 +1,749 @@
+<title>学校管理</title>
+  
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">创客空间门户管理</a>
+    <a><cite>学校管理</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-portalSchool-formlist">
+      <div class="layui-form-item">
+      	<div id="search_province_div" style="float:left;display:none;">
+	      	<div class="layui-inline">
+	          <label class="layui-form-label">市级</label>
+	          <div class="layui-input-block">
+	          	<script type="text/html" template lay-url="wkrj/orgSchools/getOrgByParentId" lay-done="layui.data.getOrgDone(d)">
+        		<select lay-filter="cityFilter" name="cityId">
+					<option value=''>请选择市</option>
+              		{{# for(var i=0;i<d.data.length;i++){ }}
+						<option value="{{d.data[i].dept_id}}">{{d.data[i].dept_name}}</option>
+					{{# } }}
+            	</select>
+      		</script>
+	          </div>
+	        </div>
+	        <div class="layui-inline" >
+	          <label class="layui-form-label">区县</label>
+	          <div class="layui-input-block">
+	          	<select id="countyId" name="countyId">
+	              		
+	            </select>
+	          </div>
+	        </div>
+        </div>
+        <div id="search_city_div" style="float:left;display:none;">
+	      	<div class="layui-inline">
+	          <label class="layui-form-label">区县</label>
+	          <div class="layui-input-block">
+	          	<script type="text/html" template lay-url="wkrj/orgSchools/getOrgByParentId" lay-done="layui.data.getOrgDone(d)">
+        			<select name="countyId_city">
+						<option value=''>请选择区县</option>
+              			{{# for(var i=0;i<d.data.length;i++){ }}
+							<option value="{{d.data[i].dept_id}}">{{d.data[i].dept_name}}</option>
+						{{# } }}
+            		</select>
+      			</script>
+	          </div>
+	        </div>
+        </div>
+        <div style="float:left;">
+	        <div class="layui-inline" >
+	          <label class="layui-form-label">学校</label>
+	          <div class="layui-input-block">
+	            <input type="text" name="schoolName" placeholder="请输入学校名称查询" autocomplete="off" class="layui-input">
+	          </div>
+	        </div>
+	        <div class="layui-inline">
+	          <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-portal-school-search">
+	            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+	          </button>
+	        </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="addSchool">新增</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="updateSchool">编辑</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="delSchool">删除</button>
+        <!-- <button class="layui-btn layuiadmin-btn-useradmin" data-type="changeParentDept">变更所属地区</button> -->
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="mergeSchool">合并学校</button>
+      </div>
+      
+      <table id="school-table-page" lay-filter="school-table-page"></table>
+      <script type="text/html" id="imgTpl"> 
+        <img style="display: inline-block; width: 50%; height: 100%;" src= {{ d.avatar }}>
+      </script> 
+      <script type="text/html" id="table-useradmin-webuser">
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>
+      </script>
+    </div>
+  </div>
+</div>
+
+<script>
+
+layui.use(['admin', 'useradmin', 'table'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,view = layui.view
+  ,table = layui.table
+  ,form = layui.form;
+  
+  $(function(){
+	  admin.req({
+          url: 'wkrj/orgSchools/getOrgType'
+          ,type: 'post'
+          ,async:false
+          ,dataType:'json'
+          ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+          	if(res.code == "0" || res.code == 0){
+          		if(res.success){
+          			if(res.data.level == "1" || res.data.level == 1){
+          				$("#search_province_div").show();
+          			}
+          			if(res.data.level == "2" || res.data.level == 2){
+          				$("#search_city_div").show();
+          			}
+          		}
+          	}
+         }
+	  });
+  });
+  
+  form.render(null, 'layadmin-portalSchool-formlist');
+  
+  
+  //table
+      table.render({
+	      elem: '#school-table-page'
+	      ,url:'wkrj/orgSchools/listSchool'
+	      ,cols: [[{type:'checkbox',width:'5%', fixed: 'left'}
+	      //,{fixed: '',title: '序号',width:'5%',templet: '#indexTpl'}	   	   	 
+	      ,{field:'dept_name',title: '学校名称',width:'24%'}
+	      ,{field:'dept_type',title: '学段',width:'24%',}
+		  ,{field:'areaBelong',title: '所属地区',width:'24%'}
+		  ,{field:'dept_other',title: '备注',width:'23%'}
+		  //,{field:'dept_order',title: '显示顺序',width:'18%'}
+	      ]]
+	      ,page: true
+	      ,done: function(res, curr, count){
+	  		var response = layui.setter.response;
+	  		//登录状态失效，清除本地 access_token，并强制跳转到登入页
+	  		if(res[response.statusName] == response.statusCode.logout){
+	  			view.exit();
+	  		}
+	  	}
+	  	,where: { //通过 request 头传递
+	  		access_token: layui.data('layuiAdmin').access_token
+	  	}
+    });
+  
+  
+    form.on('select(cityFilter)', function(data){
+  		  //console.log(data.elem); //得到select原始DOM对象
+  		  //console.log(data.value); //得到被选中的值
+  		  //console.log(data.othis); //得到美化后的DOM对象
+  		  var cityId = data.value;
+  		  if(null == cityId || "" == cityId || undefined == cityId){
+  			$("#countyId").html("");		     	
+  			form.render(null, 'layadmin-portalSchool-formlist');	
+  		  }else{
+  			  getCountyByParentId(cityId);
+  		  }
+    });
+    
+    function getCountyByParentId(parentDeptId){
+    	admin.req({
+    		url:'wkrj/orgSchools/getOrgByParentId',
+    		data:{parentDeptId:parentDeptId},
+    		dataType:'json',
+    		success:function(result){			
+    			var html = "<option value=''>请选择区县</option>";
+    	     	if(null != result){		     		
+    	     		for(var i = 0; i<result.data.length;i++){
+    	     			html += "<option value='"+result.data[i].dept_id+"'>"+result.data[i].dept_name+"</option>";
+    	     		}
+    	     	}
+    	     	$("#countyId").html(html);		     	
+    	     	form.render(null, 'layadmin-portalSchool-formlist');			
+    		}
+    	});
+    }
+  
+  //监听搜索
+  form.on('submit(LAY-portal-school-search)', function(data){
+	  var field = data.field;
+	  var cityId = field.cityId;
+	  var countyId = field.countyId;
+	  var countyId1 = field.countyId_city;
+	  var schoolName = field.schoolName;
+	  var deptId = "";
+	  if(cityId != "" && cityId != null && cityId != undefined){
+		  deptId = cityId;
+	  }
+	  if(countyId != "" && countyId != null && countyId != undefined){
+		  deptId = countyId;
+	  }
+	  if(countyId1 != "" && countyId1 != null && countyId1 != undefined){
+		  deptId = countyId1;
+	  }
+	  var params = {deptId:deptId,schoolName:schoolName};
+	  console.dir(field);
+	  console.dir(params);
+    //执行重载
+    table.reload('school-table-page', {
+      where: params
+    });
+  });
+
+  //事件
+  var active = {
+	  addSchool: function(){
+		  admin.req({
+              url: 'wkrj/orgSchools/getOrgType'
+              ,type: 'post'
+              ,async:false
+              ,dataType:'json'
+              ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+              	if(res.code == "0" || res.code == 0){
+              		if(res.success){
+              			if(res.data.level == "1" || res.data.level == 1){
+        					admin.popup({
+        				        title: '新增学校'
+        				        ,area: ['390px', '610px']
+        				        ,id: 'LAY-popup-portal-school-add-province'
+        				        ,success: function(layero, index){
+        				        	view(this.id).render('portal/school/school_add_fromProvince').done(function(){
+                				        
+                			            form.render(null, 'layuiadmin-form-addSchoolForm_fromCity');
+                			            
+                			            //监听提交
+                			            form.on('submit(LAY-portal-school-submit-add-fromCity)', function(data){
+                			              var field = data.field; //获取提交的字段
+                			              var schoolType = field.dept_type;
+                			              
+                			              if(schoolType == "" || schoolType == null || schoolType == undefined){
+                			            	  layer.msg("请选择学段");
+                			            	  return false;
+                			              }
+                			              //提交 Ajax 成功后，关闭当前弹层并重载表格
+                			              //$.ajax({});
+                			               admin.req({
+                			                  url: 'wkrj/orgSchools/addSchool'
+                			                  ,type: 'post'
+                			                  ,data: field
+                			                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+                			                	  try {
+                			                		  res=eval('('+res+')');
+                			            			} catch (e) {}
+                			            			if(res.code=="0" || res.code==0){
+                			            				if(res.success){
+                			            					layer.close(index); //执行关闭 
+                			            					layui.table.reload('school-table-page'); //重载表格
+                			            					
+                    			            				layer.msg("添加成功");
+                			            				}else{
+                    			            				
+                    			            				layer.msg(res.msg);
+                    			            				return false;
+                    			            			}
+                			            				
+                			            			}
+                			                  }
+                			              }); 
+                			              //layer.close(index); //执行关闭 
+                			            });
+                		          });
+        				        }
+        				    });
+        				
+        				}
+						if(res.data.level == "2" || res.data.level == 2){
+							admin.popup({
+        				        title: '新增学校'
+        				        ,area: ['390px', '570px']
+        				        ,id: 'LAY-popup-portal-school-add-city'
+        				        ,success: function(layero, index){
+        				        	view(this.id).render('portal/school/school_add_fromCity').done(function(){
+                				        
+                			            form.render(null, 'layuiadmin-form-addSchoolForm_fromCity');
+                			            
+                			            //监听提交
+                			            form.on('submit(LAY-portal-school-submit-add-fromCity)', function(data){
+                			              var field = data.field; //获取提交的字段
+                			              var schoolType = field.dept_type;
+                			              
+                			              if(schoolType == "" || schoolType == null || schoolType == undefined){
+                			            	  layer.msg("请选择学段");
+                			            	  return false;
+                			              }
+                			              //提交 Ajax 成功后，关闭当前弹层并重载表格
+                			              //$.ajax({});
+                			               admin.req({
+                			                  url: 'wkrj/orgSchools/addSchool'
+                			                  ,type: 'post'
+                			                  ,data: field
+                			                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+                			                	  try {
+                			                		  res=eval('('+res+')');
+                			            			} catch (e) {}
+                			            			if(res.code=="0" || res.code==0){
+                			            				if(res.success){
+                			            					layer.close(index); //执行关闭 
+                			            					layui.table.reload('school-table-page'); //重载表格
+                			            					
+                    			            				layer.msg("添加成功");
+                			            				}else{
+                    			            				
+                    			            				layer.msg(res.msg);
+                    			            				return false;
+                    			            			}
+                			            				
+                			            			}
+                			                  }
+                			              }); 
+                			              //layer.close(index); //执行关闭 
+                			            });
+                		          });
+        				        }
+        				    });
+        				}
+						if(res.data.level == "3" || res.data.level == 3){
+							admin.popup({
+        				        title: '新增学校'
+        				        ,area: ['390px', '510px']
+        				        ,id: 'LAY-popup-portal-school-add-county'
+        				        ,success: function(layero, index){
+        				        	view(this.id).render('portal/school/school_add_fromCounty').done(function(){
+                				        
+                			            form.render(null, 'layuiadmin-form-addSchoolForm_fromCity');
+                			            
+                			            //监听提交
+                			            form.on('submit(LAY-portal-school-submit-add-fromCity)', function(data){
+                			              var field = data.field; //获取提交的字段
+                			              var schoolType = field.dept_type;
+                			              
+                			              if(schoolType == "" || schoolType == null || schoolType == undefined){
+                			            	  layer.msg("请选择学段");
+                			            	  return false;
+                			              }
+                			              //提交 Ajax 成功后，关闭当前弹层并重载表格
+                			              //$.ajax({});
+                			               admin.req({
+                			                  url: 'wkrj/orgSchools/addSchool'
+                			                  ,type: 'post'
+                			                  ,data: field
+                			                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+                			                	  try {
+                			                		  res=eval('('+res+')');
+                			            			} catch (e) {}
+                			            			if(res.code=="0" || res.code==0){
+                			            				if(res.success){
+                			            					layer.close(index); //执行关闭
+                			            					layui.table.reload('school-table-page'); //重载表格
+                			            					
+                    			            				layer.msg("添加成功");
+                    			            				
+                			            				}else{
+                    			            				
+                    			            				layer.msg(res.msg);
+                    			            			}
+                			            				
+                			            			}
+                			                  }
+                			              }); 
+                			              //layer.close(index); //执行关闭 
+                			            });
+                		          });
+        				        }
+        				    });
+						}
+              		}else{
+              			layer.msg("当前用户组织机构信息获取异常");
+              		}
+        				
+        		  }
+              }
+          });
+      
+    }
+    ,updateSchool: function(){
+        var checkStatus = table.checkStatus('school-table-page')
+        ,checkData = checkStatus.data; //得到选中的数据
+
+        if(checkData.length !== 1){
+          return layer.msg('请选择一条数据');
+        }
+        //var schoolId = checkData[0].dept_id
+        admin.popup({
+            title: '编辑学校'
+            ,area: ['390px', '560px']
+            ,id: 'LAY-popup-portal-school-edit'
+            ,success: function(layero, index){
+                view(this.id).render('portal/school/school_update',checkData[0]).done(function(){
+            
+                form.render(null, 'layuiadmin-form-editSchoolForm');
+                
+                //监听提交
+                form.on('submit(LAY-portal-school-submit-edit)', function(data){
+                  var field = data.field; //获取提交的字段
+                  
+                  var schoolType = field.dept_type;
+	              
+	              if(schoolType == "" || schoolType == null || schoolType == undefined){
+	            	  layer.msg("请选择学段");
+	            	  return false;
+	              }
+                  //提交 Ajax 成功后，关闭当前弹层并重载表格
+                  //$.ajax({});
+                   admin.req({
+                      url: 'wkrj/orgSchools/updateSchool'
+                      ,type: 'post'
+                      ,data: field
+                      ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	  try {
+                    		  res=eval('('+res+')');
+                			} catch (e) {}
+                			if(res.code=="0" || res.code==0){
+                				if(res.success){
+                					layer.close(index); //执行关闭 
+                					layui.table.reload('school-table-page'); //重载表格
+                    				layer.msg("编辑成功");
+                				}else{
+                					layer.msg(res.msg);
+                				}	
+                			}
+                      }
+                  });  
+                  //layer.close(index); //执行关闭 
+                });
+              });
+            }
+          });
+      }
+    ,delSchool: function(){
+        var checkStatus = table.checkStatus('school-table-page')
+        ,checkData = checkStatus.data; //得到选中的数据
+
+        if(checkData.length === 0){
+          return layer.msg('请选择数据');
+        }
+        var ids = new Array(); 	
+  		for(var i=0;i<checkData.length;i++){
+			ids.push(checkData[i].dept_id);
+		}
+  	    layer.confirm('确定删除吗？', function(index) {
+  	    	admin.req({
+                url: 'wkrj/orgSchools/delSchool'
+                ,type: 'post'
+                ,data: {id:ids.join(",")}
+                ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+              	  try {
+              		  res=eval('('+res+')');
+          			} catch (e) {}
+          			if(res.code=="0" || res.code==0){
+          				if(res.success){
+          					table.reload('school-table-page');
+              	            layer.msg('已删除');
+          				}else{
+              				layer.msg(res.msg);
+              			}
+          			}
+                }
+            });
+            
+         });
+      }
+      ,changeParentDept: function(){
+        var checkStatus = table.checkStatus('school-table-page')
+        ,checkData = checkStatus.data; //得到选中的数据
+
+        if(checkData.length !== 1){
+          return layer.msg('请选择一条数据');
+        }
+        admin.req({
+            url: 'wkrj/orgSchools/getOrgType'
+            ,type: 'post'
+            ,async:false
+            ,dataType:'json'
+            ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+            	if(res.code == "0" || res.code == 0){
+            		if(res.success){
+            			if(res.data.level == "1" || res.data.level == 1){
+      					admin.popup({
+      				        title: '变更所在地区'
+      				        ,area: ['390px', '430px']
+      				        ,id: 'LAY-popup-portal-school-change-province'
+      				        ,success: function(layero, index){
+      				        	view(this.id).render('portal/school/school_change_fromProvince',checkData[0]).done(function(){
+              				        
+              			            form.render(null, 'layuiadmin-form-changeSchoolForm');
+              			            
+              			            //监听提交
+              			            form.on('submit(LAY-portal-school-submit-change)', function(data){
+              			              var field = data.field; //获取提交的字段
+              			              
+              			              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              			              //$.ajax({});
+              			               admin.req({
+              			                  url: 'wkrj/orgSchools/changeSchoolBelong'
+              			                  ,type: 'post'
+              			                  ,data: field
+              			                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+              			                	  try {
+              			                		  res=eval('('+res+')');
+              			            			} catch (e) {}
+              			            			if(res.code=="0" || res.code==0){
+              			            				if(res.success){
+              			            					layer.close(index); //执行关闭 
+              			            					layui.table.reload('school-table-page'); //重载表格
+              			            					
+                  			            				layer.msg("变更成功");
+              			            				}else{
+                  			            				layer.msg(res.msg);
+                  			            				return false;
+                  			            			}
+              			            			}
+              			                  }
+              			              }); 
+              			              //layer.close(index); //执行关闭 
+              			            });
+              		          });
+      				        }
+      				    });
+      				
+      				}
+						if(res.data.level == "2" || res.data.level == 2){
+							admin.popup({
+	      				        title: '变更所在地区'
+	      				        ,area: ['390px', '370px']
+	      				        ,id: 'LAY-popup-portal-school-change-city'
+	      				        ,success: function(layero, index){
+	      				        	view(this.id).render('portal/school/school_change_fromCity',checkData[0]).done(function(){
+	              				        
+	              			            form.render(null, 'layuiadmin-form-changeSchoolForm');
+	              			            
+	              			            //监听提交
+	              			            form.on('submit(LAY-portal-school-submit-change)', function(data){
+	              			              var field = data.field; //获取提交的字段
+	              			              
+	              			              //提交 Ajax 成功后，关闭当前弹层并重载表格
+	              			              //$.ajax({});
+	              			               admin.req({
+	              			                  url: 'wkrj/orgSchools/changeSchoolBelong'
+	              			                  ,type: 'post'
+	              			                  ,data: field
+	              			                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+	              			                	  try {
+	              			                		  res=eval('('+res+')');
+	              			            			} catch (e) {}
+	              			            			if(res.code=="0" || res.code==0){
+	              			            				if(res.success){
+	              			            					layer.close(index); //执行关闭 
+	              			            					layui.table.reload('school-table-page'); //重载表格
+	              			            					
+	                  			            				layer.msg("变更成功");
+	              			            				}else{
+	                  			            				
+	                  			            				layer.msg(res.msg);
+	                  			            				return false;
+	                  			            			}
+	              			            				
+	              			            			}
+	              			                  }
+	              			              }); 
+	              			              //layer.close(index); //执行关闭 
+	              			            });
+	              		          });
+	      				        }
+	      				    });
+      				}
+						if(res.data.level == "3" || res.data.level == 3){
+							layer.msg("请联系上级管理员对您下属学校进行地区变更");
+						}
+            		}else{
+            			layer.msg("当前用户组织机构信息获取异常");
+            		}
+      				
+      		  }
+            }
+        });
+      }
+      ,mergeSchool: function(){
+        var checkStatus = table.checkStatus('school-table-page')
+        ,checkData = checkStatus.data; //得到选中的数据
+
+        if(checkData.length !== 1){
+          return layer.msg('请选择一条数据');
+        }
+        
+        admin.req({
+            url: 'wkrj/orgSchools/getOrgType'
+            ,type: 'post'
+            ,async:false
+            ,dataType:'json'
+            ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+            	if(res.code == "0" || res.code == 0){
+            		if(res.success){
+            			if(res.data.level == "1" || res.data.level == 1){
+      					admin.popup({
+      				        title: '合并学校'
+      				        ,area: ['390px', '470px']
+      				        ,id: 'LAY-popup-portal-school-merge-province'
+      				        ,success: function(layero, index){
+      				        	view(this.id).render('portal/school/school_merge_fromProvince',checkData[0]).done(function(){
+              				        
+              			            form.render(null, 'layuiadmin-form-mergeSchoolForm');
+              			            
+              			            //监听提交
+              			            form.on('submit(LAY-portal-school-submit-merge)', function(data){
+              			              var field = data.field; //获取提交的字段
+              			              
+              			              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              			              //$.ajax({});
+              			               admin.req({
+              			                  url: 'wkrj/orgSchools/mergeSchool'
+              			                  ,type: 'post'
+              			                  ,data: field
+              			                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+              			                	  try {
+              			                		  res=eval('('+res+')');
+              			            			} catch (e) {}
+              			            			if(res.code=="0" || res.code==0){
+              			            				if(res.success){
+              			            					layer.close(index); //执行关闭 
+              			            					layui.table.reload('school-table-page'); //重载表格
+              			            					
+                  			            				layer.msg("合并成功");
+              			            				}else{
+                  			            				
+                  			            				layer.msg(res.msg);
+                  			            				return false;
+                  			            			}
+              			            				
+              			            			}
+              			                  }
+              			              }); 
+              			              //layer.close(index); //执行关闭 
+              			            });
+              		          });
+      				        }
+      				    });
+      				
+      				}
+					if(res.data.level == "2" || res.data.level == 2){
+						admin.popup({
+      				        title: '合并学校'
+      				        ,area: ['390px', '450px']
+      				        ,id: 'LAY-popup-portal-school-merge-city'
+      				        ,success: function(layero, index){
+      				        	view(this.id).render('portal/school/school_merge_fromCity',checkData[0]).done(function(){
+              				        
+              			            form.render(null, 'layuiadmin-form-mergeSchoolForm');
+              			            
+              			            //监听提交
+              			            form.on('submit(LAY-portal-school-submit-merge)', function(data){
+              			              var field = data.field; //获取提交的字段
+              			              
+              			              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              			              //$.ajax({});
+              			               admin.req({
+              			                  url: 'wkrj/orgSchools/mergeSchool'
+              			                  ,type: 'post'
+              			                  ,data: field
+              			                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+              			                	  try {
+              			                		  res=eval('('+res+')');
+              			            			} catch (e) {}
+              			            			if(res.code=="0" || res.code==0){
+              			            				if(res.success){
+              			            					layer.close(index); //执行关闭 
+              			            					layui.table.reload('school-table-page'); //重载表格	
+                  			            				layer.msg("合并成功");
+              			            				}else{
+                  			            				layer.msg(res.msg);
+                  			            				return false;
+                  			            			}
+              			            				
+              			            			}
+              			                  }
+              			              }); 
+              			              //layer.close(index); //执行关闭 
+              			            });
+              		          });
+      				        }
+      				    });
+      				}
+					if(res.data.level == "3" || res.data.level == 3){
+						admin.popup({
+      				        title: '合并学校'
+      				        ,area: ['390px', '370px']
+      				        ,id: 'LAY-popup-portal-school-merge-county'
+      				        ,success: function(layero, index){
+      				        	view(this.id).render('portal/school/school_merge_fromCounty',checkData[0]).done(function(){
+              				        
+              			            form.render(null, 'layuiadmin-form-mergeSchoolForm');
+              			            
+              			            //监听提交
+              			            form.on('submit(LAY-portal-school-submit-merge)', function(data){
+              			              var field = data.field; //获取提交的字段
+              			              
+              			              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              			              //$.ajax({});
+              			               admin.req({
+              			                  url: 'wkrj/orgSchools/mergeSchool'
+              			                  ,type: 'post'
+              			                  ,data: field
+              			                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 success 则是只要 http 为 200 就会执行
+              			                	  try {
+              			                		  res=eval('('+res+')');
+              			            			} catch (e) {}
+              			            			if(res.code=="0" || res.code==0){
+              			            				if(res.success){
+              			            					layer.close(index); //执行关闭 
+              			            					layui.table.reload('school-table-page'); //重载表格
+              			            					
+                  			            				layer.msg("合并成功");
+              			            				}else{
+                  			            				
+                  			            				layer.msg(res.msg);
+                  			            				return false;
+                  			            			}
+              			            				
+              			            			}
+              			                  }
+              			              }); 
+              			              //layer.close(index); //执行关闭 
+              			            });
+              		          });
+      				        }
+      				    });
+					}
+            		}else{
+            			layer.msg("当前用户组织机构信息获取异常");
+            		}
+      		  }
+            }
+        });
+      }
+  };
+  
+  $('.layui-btn.layuiadmin-btn-useradmin').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+});
+
+layui.data.getOrgDone = function(d){
+	layui.use(['form'], function(){
+	    var form = layui.form;
+	     form.render(null, 'layadmin-portalSchool-formlist'); //渲染该模板下的动态表单
+	  });
+}
+</script>

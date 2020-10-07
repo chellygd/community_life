@@ -1,0 +1,72 @@
+<div class="layui-form" lay-filter="layuiadmin-form-noticeadmin" style="padding: 20px 0 0 0;">
+	 <script type="text/html" template>
+	<input type="hidden" name="notice_id" value="{{ d.params.notice_id || '' }}">
+	</script>
+  <div class="layui-form-item">
+    <label class="layui-form-label">标题</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="notice_title" value="{{ d.params.notice_title || '' }}" lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">地址</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="notice_url" value="{{ d.params.notice_url || '' }}" lay-verify="required" placeholder="请输入地址" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">排序</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="sort" value="{{ d.params.sort || '' }}" lay-verify="number" placeholder="请输入" autocomplete="off" class="layui-input">
+      </script>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <label class="layui-form-label">发布时间</label>
+    <div class="layui-input-block">
+      <script type="text/html" template>
+        <input type="text" name="input_time" id="input_time" value="{{ d.params.input_time || '' }}" lay-verify="required"  class="layui-input">
+      </script>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <label class="layui-form-label"></label>
+    <div class="layui-input-block">
+      <input type="button" lay-submit lay-filter="LAY-notice-front-submit" value="确认" class="layui-btn">
+    </div>
+  </div>
+</div>
+
+<script>
+layui.use(['admin', 'form', 'upload','laydate'], function(){
+  var $ = layui.$
+  ,form = layui.form
+  ,upload = layui.upload
+  ,laydate = layui.laydate;
+	//日期时间选择器
+	  laydate.render({ 
+	    elem: '#input_time'
+	    ,type: 'datetime'
+	  });
+	
+	  form.render();
+  
+  //上传头像
+/*   upload.render({
+    elem: '#layuiadmin-upload-useradmin'
+    ,url: './json/upload/demo.js'
+    ,accept: 'images'
+    ,method: 'get'
+    ,acceptMime: 'image/*'
+    ,done: function(res){
+      $(this.item).prev("div").children("input").val(res.data.src)
+    }
+  }); */
+})
+</script>

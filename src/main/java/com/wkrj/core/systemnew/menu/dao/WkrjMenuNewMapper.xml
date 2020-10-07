@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wkrj.core.systemnew.menu.dao.WkrjMenuNewDao">
+	
+	<select id="getAllMenu" resultType="com.wkrj.core.systemnew.menu.bean.WkrjMenuNew" parameterType="java.lang.String">
+		
+		SELECT module_id,menu_id,menu_name,menu_is_display,menu_level,menu_url,menu_parent_id,menu_order,menu_icon,menu_other,menu_icon_new  
+		FROM `wkrj_sys_menu` 
+		where menu_parent_id = #{parentId} order by menu_order
+	
+	</select>
+	<select id="getAllMenuChildCount" resultType="int" parameterType="java.lang.String">
+		
+		SELECT count(menu_id)  
+		FROM wkrj_sys_menu
+		where menu_parent_id = #{parentId}
+	
+	</select>
+	<insert id="addMenu" parameterType="com.wkrj.core.systemnew.menu.bean.WkrjMenuNew" >
+		
+		insert wkrj_sys_menu(module_id,menu_id,menu_name,menu_level,menu_url,menu_parent_id,menu_order,menu_icon,menu_is_display,menu_other,menu_icon_new )
+		values(#{moduleId},#{menuId},#{menuName},#{menuLevel},#{menuUrl},#{menuParentId},
+			   #{menuOrder},#{menuIcon},#{menuIsDisplay},#{menuOther},#{menuIconNew});
+	
+	</insert>
+	<update id="updateMenu" parameterType="com.wkrj.core.systemnew.menu.bean.WkrjMenuNew">
+		
+		update wkrj_sys_menu
+		set
+			module_id=#{moduleId}, menu_name=#{menuName},menu_level=#{menuLevel},menu_url=#{menuUrl},
+			menu_parent_id=#{menuParentId},menu_order=#{menuOrder},menu_icon=#{menuIcon},menu_is_display=#{menuIsDisplay},
+			menu_other=#{menuOther},menu_icon_new =#{menuIconNew }
+		where menu_id=#{menuId}
+		
+	</update>
+
+	<delete id="delMenu">
+		
+		delete from wkrj_sys_menu where menu_id=#{id}
+		
+	</delete>
+	<select id="getGridInfoChildCount" resultType="int" parameterType="java.lang.String">
+		
+		SELECT count(menu_id)  
+		FROM wkrj_sys_menu
+		where menu_is_display=0 and menu_parent_id = #{parentId}
+	
+	</select>
+	<select id="getMenuById" resultType="com.wkrj.core.systemnew.menu.bean.WkrjMenuNew" parameterType="java.lang.String">
+		
+		SELECT module_id,menu_id,menu_name,menu_is_display,menu_level,menu_url,menu_parent_id,menu_order,menu_icon,menu_other,menu_icon_new 
+		FROM `wkrj_sys_menu` 
+		where menu_is_display=0 and menu_id = #{menu_id}  order by menu_order
+	
+	</select>
+	<select id="getMenuById1" resultType="com.wkrj.core.systemnew.menu.bean.WkrjMenuNew" parameterType="java.lang.String">
+		
+		SELECT module_id,menu_id,menu_name,menu_is_display,menu_level,menu_url,menu_parent_id,menu_order,menu_icon,menu_other,menu_icon_new  
+		FROM `wkrj_sys_menu` 
+		where menu_is_display=0 and menu_id = #{menu_id} and menu_parent_id = #{parentId} order by menu_order
+	
+	</select> 
+	<select id="checkNodeisLeaf" resultType="com.wkrj.core.systemnew.menu.bean.WkrjMenuNew" parameterType="java.lang.String">
+		
+		SELECT module_id,menu_id,menu_name,menu_is_display,menu_level,menu_url,menu_parent_id,menu_order,menu_icon,menu_other 
+		FROM `wkrj_sys_menu` 
+		where menu_is_display=0 and menu_parent_id = #{parentId} order by menu_order
+	
+	</select>
+</mapper>
+

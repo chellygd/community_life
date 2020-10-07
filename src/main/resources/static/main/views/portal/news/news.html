@@ -1,0 +1,314 @@
+<title>新闻管理</title>
+
+<div class="layui-card layadmin-header">
+  <div class="layui-breadcrumb" lay-filter="breadcrumb">
+    <a lay-href="">创客空间门户管理</a>
+    <a><cite>新闻管理</cite></a>
+  </div>
+</div>
+
+<div class="layui-fluid">
+  <div class="layui-card">
+    <div class="layui-form layui-card-header layuiadmin-card-header-auto" lay-filter="layadmin-newsfront-formlist">
+      <div class="layui-form-item">
+        <div class="layui-inline">
+          <label class="layui-form-label">标题</label>
+          <div class="layui-input-block">
+            <input type="text" name="news_title" placeholder="请输入（可模糊查询）" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+
+        <div class="layui-inline">
+          <button class="layui-btn layuiadmin-btn-useradmin" lay-submit lay-filter="LAY-news-front-search">
+            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="layui-card-body">
+      <div style="padding-bottom: 10px;">
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="addNews">发布</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="updateNews">修改</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="delNews">删除</button>
+        <button class="layui-btn layuiadmin-btn-useradmin" data-type="istopNews">置顶/取消置顶</button>
+      </div>
+      
+      <table id="news-table-page" lay-filter="news-table-page"></table>
+    
+
+    </div>
+  </div>
+</div>
+ <style>
+.laytable-cell-1-title_pic{
+		width:60px;
+		height:60px;
+}
+</style> 
+  <script type="text/html" id="imgTpl"> 
+        <img style="display: inline-block; width: 100%; height: 100%;" src= {{ d.title_pic }}>
+      </script> 
+       <script type="text/javascript" charset="utf-8" src="plug-in/ueditor/ueditor.config.js"></script>
+    <script type="text/javascript" charset="utf-8" src="plug-in/ueditor/ueditor.all.min.js"> </script>
+
+    <script type="text/javascript" charset="utf-8" src="plug-in/ueditor/lang/zh-cn/zh-cn.js"></script>
+<script>
+//var ue = UE.getEditor('editor');
+layui.use(['admin', 'useradmin', 'table'], function(){
+  var $ = layui.$
+  ,admin = layui.admin
+  ,view = layui.view
+  ,table = layui.table
+  ,form = layui.form;
+  
+  form.render(null, 'layadmin-newsfront-formlist');
+  
+  //table
+      table.render({
+      elem: '#news-table-page'
+      ,url: 'wkrj/news/newsList'
+      ,cols: [[
+               {type:'checkbox', fixed: 'left'}
+               ,{field:'title_pic', title: '标题图片',width:'8%',fixed: 'left', templet:'#imgTpl'}
+   	   	    ,{field:'news_title',width:'33%',title: '标题'}	 
+   	   	    ,{field:'source',width:'15%',title: '来源'}
+   	   	    ,{field:'tags',width:'17%',title: '关键字标签'}
+   	   	    ,{field:'input_time',width:'12%',title: '发布时间'}  	        
+   	   	 ,{field:'istop',width:'7%',title: '是否置顶',templet: '#istop'} 
+   	   	,{field:'sort',width:'5%',title: '排序'}  	   
+      ]]
+      ,page: true
+      ,done: function(res, curr, count){
+  		var response = layui.setter.response;
+  		//登录状态失效，清除本地 access_token，并强制跳转到登入页
+  		if(res[response.statusName] == response.statusCode.logout){
+  			view.exit();
+  		}
+  	}
+  	,where: { //通过 request 头传递
+  		access_token: layui.data('layuiAdmin').access_token
+  	}
+    });
+  
+  
+  
+  
+  //监听搜索
+  form.on('submit(LAY-news-front-search)', function(data){
+	  var field = data.field;
+    //执行重载
+    table.reload('news-table-page', {
+      where: field
+    });
+  });
+
+
+  
+  
+  //事件
+  var active = {
+   addNews: function(){
+      admin.popup({
+        title: '发布新闻'
+        ,area: ['1200px', '700px']
+        ,id: 'LAY-popup-news-add'
+        ,success: function(layero, index){
+          view(this.id).render('portal/news/newsform').done(function(){
+            UE.delEditor('editor')
+            UE.getEditor('editor');
+            UE.Editor.prototype._bkGetActionUrl = UE.Editor.prototype.getActionUrl;
+            UE.Editor.prototype.getActionUrl = function (action) {
+              if (action == 'uploadimage' || action == 'uploadscrawl' || action == 'uploadimage') {
+                return '../../../../ueditor/uploadImage';
+              } else {
+                return this._bkGetActionUrl.call(this, action);
+              }
+            }
+            form.render(null, 'layuiadmin-form-newsadmin');
+            //监听提交
+            form.on('submit(LAY-news-front-submit)', function(data){
+              var field = data.field; //获取提交的字段
+              field.news_content=UE.getEditor('editor').getContent();
+              console.dir(field);
+              //提交 Ajax 成功后，关闭当前弹层并重载表格
+              //$.ajax({});
+               admin.req({
+                  url: 'wkrj/news/addNews'
+                  ,type: 'post'
+                  ,data: field
+                  ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+						 try {
+                		  res=eval('('+res+')');
+            			} catch (e) {}
+            			if(res.success){
+            				layer.msg("发布成功");
+            	              layer.close(index); //执行关闭 
+            				layui.table.reload('news-table-page'); //重载表格
+            			}else {
+            				layer.msg("发布失败");
+						}
+                  }
+                 }); 
+             
+              
+
+             // layer.msg('发布成功');
+            });
+          });
+        }
+      });
+    },
+    updateNews:function(){
+    	var checkStatus = table.checkStatus('news-table-page'),
+	  	    data = checkStatus.data;
+	  	    if(data.length != 1){
+	  	    	layer.msg("请选择一条信息进行编辑！");
+	  	    	return;
+	  	    }
+        admin.popup({
+            title: '编辑新闻'
+            ,area: ['1200px', '700px']
+            ,id: 'LAY-popup-news-update'
+            ,success: function(layero, index){
+        		
+              view(this.id).render('portal/news/newsform',data[0]).done(function(){
+            	  UE.delEditor('editor')
+            	  UE.getEditor('editor');
+            	  //富文本编辑框赋值
+            	  UE.getEditor('editor').addListener("ready", function () {
+  					UE.getEditor('editor').setContent(data[0].news_content);
+  					});
+            	  
+            	  
+            	  $("#btImg_div").html("<img src=\""+data[0].title_pic+"\" style=\"width:200px;height:150px;\">");
+                form.render(null, 'layuiadmin-form-newsadmin');
+                
+                //监听提交
+                form.on('submit(LAY-news-front-submit)', function(data){
+                  var field = data.field; //获取提交的字段
+                  field.news_content=UE.getEditor('editor').getContent();
+                  //提交 Ajax 成功后，关闭当前弹层并重载表格
+                  //$.ajax({});
+                   admin.req({
+                      url: 'wkrj/news/updateNews'
+                      ,type: 'post'
+                      ,data: field
+                      ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	  try {
+                    		  res=eval('('+res+')');
+                			} catch (e) {}
+                			if(res.success){
+                				layer.msg("编辑成功");
+                				layui.table.reload('news-table-page'); //重载表格
+                                layer.close(index);
+                			}else {
+                				layer.msg("编辑失败");
+							}
+                       
+                      }
+                     }); 
+                 
+                   //执行关闭 
+                });
+              });
+            }
+          });
+        },
+        delNews: function(){
+            var checkStatus = table.checkStatus('news-table-page')
+            ,checkData = checkStatus.data; //得到选中的数据
+
+            if(checkData.length === 0){
+              return layer.msg('请选择数据');
+            }
+            var newsIds = "";
+            var titlePics = "";
+	  	      for(var i=0;i<checkData.length;i++){
+	  	    	newsIds += checkData[i].news_id+",";
+	  	    	titlePics += checkData[i].title_pic+",";
+	  	      }
+	  	      if(null != newsIds && ""!= newsIds){
+	  	    	newsIds = newsIds.substring(0, newsIds.length-1);
+	  	    	titlePics = titlePics.substring(0, titlePics.length-1);
+              layer.confirm('确定删除吗？', function(index) {
+            	   admin.req({
+                       url: 'wkrj/news/delNews'
+                       ,type: 'post'
+                       ,data: {ids:newsIds,titlePics:titlePics}
+                       ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	   try {
+                     		  res=eval('('+res+')');
+                 			} catch (e) {}
+                 			if(res.success){
+                				layer.msg("删除成功");
+                				layui.table.reload('news-table-page'); //重载表格
+                                layer.close(index);
+                			}else {
+                				layer.msg("删除失败");
+							}
+                        
+                       }
+                      }); 
+               
+              });
+	  	      }
+          },istopNews:function(){
+			   var checkStatus = table.checkStatus('news-table-page')
+	  	  	      ,data = checkStatus.data;
+	  	  	      if(data.length != 1){
+	  	  	    	  layer.msg("请选择一条信息进行置顶！");
+	  	  	    	  return;
+	  	  	      }
+	  	  	  
+	  	     	var istop = data[0].istop;
+	  	     	if (istop==1) {
+	  	     		istop=2;
+				}else{
+				
+					istop=1;
+				}
+	  	      var newsId = data[0].news_id;
+	  	      if(null != newsId && ""!= newsId){
+ 
+	  	       layer.confirm('确定置顶或取消吗？', function(index) {
+            	   admin.req({
+                       url: 'wkrj/news/istopNews'
+                       ,type: 'post'
+                       ,data: {id:newsId,istop:istop}
+                       ,success: function(res){ //这里要说明一下：done 是只有 response 的 code 正常才会执行。而 succese 则是只要 http 为 200 就会执行
+                    	   try {
+                     		  res=eval('('+res+')');
+                 			} catch (e) {}
+                 			if(res.success){
+                				layer.msg("置顶或取消成功")
+                				layui.table.reload('news-table-page'); //重载表格
+                			}else {
+                				layer.msg("置顶或取消失败！");
+							}
+                        
+                       }
+                      }); 
+               
+              });
+   
+	  	  	    
+	        }
+			
+			
+		}
+  };
+  
+  $('.layui-btn.layuiadmin-btn-useradmin').on('click', function(){
+    var type = $(this).data('type');
+    active[type] ? active[type].call(this) : '';
+  });
+});
+</script>
+<script type="text/html" id="istop">
+    {{#  if(d.istop==1){ }}
+		<span style="color:red">是</span>
+	{{#  } else { }}
+		否
+	{{#  } }}
+</script>

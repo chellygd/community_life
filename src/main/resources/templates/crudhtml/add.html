@@ -1,0 +1,24 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<form class="layui-form" th:id="${data.tableNameHump+'_addForm'}" th:attr="lay-filter=${data.tableNameHump+'_addForm'}">
+    <th:block th:each="rower:${data.columnList}">
+        <div class="layui-form-item">
+            <label class="layui-form-label" th:text="${rower.columnNameHump}"></label>
+            <div class="layui-input-block">
+                <input type="text" th:name="${rower.columnNameHump}" value="" placeholder="请输入" autocomplete="off" class="layui-input"/>
+            </div>
+        </div>
+    </th:block>
+    <div class="layui-form-item">
+        <label class="layui-form-label"></label>
+        <div class="layui-input-block">
+            <input type="button" lay-submit th:attr="lay-filter=${data.tableNameHump+'_addSubmit'}" value="提交" class="layui-btn">
+            <input type="button" onclick="close_data()" value="取消" class="layui-btn">
+        </div>
+    </div>
+</form>
+<script>
+    function close_data() {
+        parent.layer.closeAll();
+    }
+</script>
+</html>
